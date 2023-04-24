@@ -1,0 +1,14 @@
+name: Deploy kafka to dev and prod
+on: push
+
+jobs:
+  jar-app:
+    uses: navikt/teamsykmelding-github-actions-workflows/.github/workflows/jar-app.yaml@main
+    secrets: inherit
+    with:
+      app: dinesykmeldte-kafka
+      dockerfile_path: Dockerfile
+      docker_context: .
+      subprojects: false
+      naiserator_dev: naiserator-dev.yaml
+      naiserator_prod: naiserator-prod.yaml
