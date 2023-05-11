@@ -22,7 +22,7 @@ val testContainerVersion = "1.18.0"
 val kotlinVersion = "1.8.21"
 val sykepengesoknadKafkaVersion = "2022.10.28-10.24-aa0eced7"
 val kotestVersion = "5.6.2"
-val googlePostgresVersion = "1.11.1"
+val googlePostgresVersion = "1.11.2"
 val googleOauthVersion = "1.34.1"
 
 tasks.withType<Jar> {
