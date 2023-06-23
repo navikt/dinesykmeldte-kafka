@@ -1,5 +1,8 @@
 package no.nav.syfo.common.delete
 
+import java.time.LocalDate
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -11,9 +14,6 @@ import no.nav.syfo.application.metrics.SLETTET_COUNTER
 import no.nav.syfo.util.Unbounded
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.ExperimentalTime
 
 class DeleteDataService(
     private val database: DeleteDataDb,
@@ -35,8 +35,11 @@ class DeleteDataService(
                 if (leaderElection.isLeader()) {
                     try {
                         val result = database.deleteOldData(getDateForDeletion())
-                        log.info("Deleted ${result.deletedSykmelding} sykmeldinger, ${result.deletedSykmeldt} sykmeldte, ${result.deletedSoknader} soknader and ${result.deletedHendelser} hendelser")
-                        SLETTET_COUNTER.labels("sykmelding").inc(result.deletedSykmelding.toDouble())
+                        log.info(
+                            "Deleted ${result.deletedSykmelding} sykmeldinger, ${result.deletedSykmeldt} sykmeldte, ${result.deletedSoknader} soknader and ${result.deletedHendelser} hendelser"
+                        )
+                        SLETTET_COUNTER.labels("sykmelding")
+                            .inc(result.deletedSykmelding.toDouble())
                         SLETTET_COUNTER.labels("sykmeldt").inc(result.deletedSykmeldt.toDouble())
                         SLETTET_COUNTER.labels("soknad").inc(result.deletedSoknader.toDouble())
                         SLETTET_COUNTER.labels("hendelse").inc(result.deletedHendelser.toDouble())

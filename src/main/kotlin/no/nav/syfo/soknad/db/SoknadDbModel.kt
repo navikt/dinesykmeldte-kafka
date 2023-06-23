@@ -1,10 +1,10 @@
 package no.nav.syfo.soknad.db
 
+import java.time.LocalDate
+import java.time.OffsetDateTime
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.objectMapper
 import org.postgresql.util.PGobject
-import java.time.LocalDate
-import java.time.OffsetDateTime
 
 data class SoknadDbModel(
     val soknadId: String,
@@ -18,7 +18,8 @@ data class SoknadDbModel(
     val tom: LocalDate,
 )
 
-fun SykepengesoknadDTO.toPGObject() = PGobject().also {
-    it.type = "json"
-    it.value = objectMapper.writeValueAsString(this)
-}
+fun SykepengesoknadDTO.toPGObject() =
+    PGobject().also {
+        it.type = "json"
+        it.value = objectMapper.writeValueAsString(this)
+    }

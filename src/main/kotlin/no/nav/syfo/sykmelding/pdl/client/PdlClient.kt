@@ -19,12 +19,15 @@ class PdlClient(
     private val tema = "SYM"
 
     suspend fun getPerson(fnr: String, token: String): GetPersonResponse {
-        val getPersonRequest = GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(ident = fnr))
-        return httpClient.post(basePath) {
-            setBody(getPersonRequest)
-            header(HttpHeaders.Authorization, "Bearer $token")
-            header(temaHeader, tema)
-            header(HttpHeaders.ContentType, "application/json")
-        }.body()
+        val getPersonRequest =
+            GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(ident = fnr))
+        return httpClient
+            .post(basePath) {
+                setBody(getPersonRequest)
+                header(HttpHeaders.Authorization, "Bearer $token")
+                header(temaHeader, tema)
+                header(HttpHeaders.ContentType, "application/json")
+            }
+            .body()
     }
 }

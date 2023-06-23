@@ -1,6 +1,9 @@
 package no.nav.syfo.util
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import no.nav.helse.flex.sykepengesoknad.kafka.ArbeidsgiverDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.getFileAsString
@@ -17,9 +20,6 @@ import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
 import no.nav.syfo.soknad.toSoknadDbModel
 import no.nav.syfo.sykmelding.db.SykmeldingDbModel
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 fun createSykmeldingDbModel(
     sykmeldingId: String,
@@ -47,41 +47,54 @@ fun createSoknadDbModel(
     arbeidsgivernavn: String = "Kebabbiten",
     orgnummer: String = "123454543",
 ): SoknadDbModel {
-    val sykepengesoknadDTO: SykepengesoknadDTO = objectMapper.readValue<SykepengesoknadDTO>(
-        getFileAsString("src/test/resources/soknad.json"),
-    ).copy(
-        id = soknadId,
-        sykmeldingId = sykmeldingId,
-        fnr = pasientFnr,
-        arbeidsgiver = ArbeidsgiverDTO(
-            navn = arbeidsgivernavn,
-            orgnummer = orgnummer,
-        ),
-    )
+    val sykepengesoknadDTO: SykepengesoknadDTO =
+        objectMapper
+            .readValue<SykepengesoknadDTO>(
+                getFileAsString("src/test/resources/soknad.json"),
+            )
+            .copy(
+                id = soknadId,
+                sykmeldingId = sykmeldingId,
+                fnr = pasientFnr,
+                arbeidsgiver =
+                    ArbeidsgiverDTO(
+                        navn = arbeidsgivernavn,
+                        orgnummer = orgnummer,
+                    ),
+            )
     return sykepengesoknadDTO.toSoknadDbModel()
 }
 
 fun createArbeidsgiverSykmelding(
     sykmeldingId: String,
     perioder: List<SykmeldingsperiodeAGDTO> = listOf(createSykmeldingsperiode()),
-) = ArbeidsgiverSykmelding(
-    id = sykmeldingId,
-    mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
-    syketilfelleStartDato = null,
-    behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
-    arbeidsgiver = ArbeidsgiverAGDTO(null, null),
-    sykmeldingsperioder = perioder,
-    prognose = null,
-    tiltakArbeidsplassen = null,
-    meldingTilArbeidsgiver = null,
-    kontaktMedPasient = KontaktMedPasientAGDTO(null),
-    behandler = BehandlerAGDTO("Fornavn", null, "Etternavn", null, AdresseDTO(null, null, null, null, null), null),
-    egenmeldt = false,
-    papirsykmelding = false,
-    harRedusertArbeidsgiverperiode = false,
-    merknader = null,
-    utenlandskSykmelding = null,
-)
+) =
+    ArbeidsgiverSykmelding(
+        id = sykmeldingId,
+        mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
+        syketilfelleStartDato = null,
+        behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC).minusDays(1),
+        arbeidsgiver = ArbeidsgiverAGDTO(null, null),
+        sykmeldingsperioder = perioder,
+        prognose = null,
+        tiltakArbeidsplassen = null,
+        meldingTilArbeidsgiver = null,
+        kontaktMedPasient = KontaktMedPasientAGDTO(null),
+        behandler =
+            BehandlerAGDTO(
+                "Fornavn",
+                null,
+                "Etternavn",
+                null,
+                AdresseDTO(null, null, null, null, null),
+                null
+            ),
+        egenmeldt = false,
+        papirsykmelding = false,
+        harRedusertArbeidsgiverperiode = false,
+        merknader = null,
+        utenlandskSykmelding = null,
+    )
 
 fun createSykmeldingsperiode(
     fom: LocalDate = LocalDate.now().minusDays(2),
@@ -92,13 +105,14 @@ fun createSykmeldingsperiode(
     type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
     aktivitetIkkeMulig: AktivitetIkkeMuligAGDTO? = AktivitetIkkeMuligAGDTO(null),
     reisetilskudd: Boolean = false,
-) = SykmeldingsperiodeAGDTO(
-    fom = fom,
-    tom = tom,
-    gradert = gradert,
-    behandlingsdager = behandlingsdager,
-    innspillTilArbeidsgiver = innspillTilArbeidsgiver,
-    type = type,
-    aktivitetIkkeMulig = aktivitetIkkeMulig,
-    reisetilskudd = reisetilskudd,
-)
+) =
+    SykmeldingsperiodeAGDTO(
+        fom = fom,
+        tom = tom,
+        gradert = gradert,
+        behandlingsdager = behandlingsdager,
+        innspillTilArbeidsgiver = innspillTilArbeidsgiver,
+        type = type,
+        aktivitetIkkeMulig = aktivitetIkkeMulig,
+        reisetilskudd = reisetilskudd,
+    )

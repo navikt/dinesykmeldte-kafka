@@ -1,44 +1,45 @@
 package no.nav.syfo.narmesteleder
 
 import io.kotest.core.spec.style.FunSpec
-import no.nav.syfo.narmesteleder.db.NarmestelederDb
-import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
-import no.nav.syfo.util.TestDb
-import org.amshove.kluent.shouldBeEqualTo
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
+import no.nav.syfo.narmesteleder.db.NarmestelederDb
+import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
+import no.nav.syfo.util.TestDb
+import org.amshove.kluent.shouldBeEqualTo
 
-class NarmestelederServiceTest : FunSpec({
-    val database = NarmestelederDb(TestDb.database)
-    val narmestelederService = NarmestelederService(database)
+class NarmestelederServiceTest :
+    FunSpec({
+        val database = NarmestelederDb(TestDb.database)
+        val narmestelederService = NarmestelederService(database)
 
-    beforeEach {
-        TestDb.clearAllData()
-    }
+        beforeEach { TestDb.clearAllData() }
 
-    context("NarmestelederService") {
-        test("Legger inn ny NL-kobling") {
-            val id = UUID.randomUUID()
-            narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id))
+        context("NarmestelederService") {
+            test("Legger inn ny NL-kobling") {
+                val id = UUID.randomUUID()
+                narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id))
 
-            val nlKobling = TestDb.getNarmesteleder(pasientFnr = "12345678910").first()
+                val nlKobling = TestDb.getNarmesteleder(pasientFnr = "12345678910").first()
 
-            nlKobling.pasientFnr shouldBeEqualTo "12345678910"
-            nlKobling.lederFnr shouldBeEqualTo "01987654321"
-            nlKobling.orgnummer shouldBeEqualTo "88888888"
-            nlKobling.narmestelederId shouldBeEqualTo id.toString()
+                nlKobling.pasientFnr shouldBeEqualTo "12345678910"
+                nlKobling.lederFnr shouldBeEqualTo "01987654321"
+                nlKobling.orgnummer shouldBeEqualTo "88888888"
+                nlKobling.narmestelederId shouldBeEqualTo id.toString()
+            }
+            test("Sletter deaktivert NL-kobling") {
+                val id = UUID.randomUUID()
+                narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id))
+                narmestelederService.updateNl(
+                    createNarmestelederLeesahKafkaMessage(id, aktivTom = LocalDate.now())
+                )
+
+                TestDb.getNarmesteleder(pasientFnr = "12345678910").size shouldBeEqualTo 0
+            }
         }
-        test("Sletter deaktivert NL-kobling") {
-            val id = UUID.randomUUID()
-            narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id))
-            narmestelederService.updateNl(createNarmestelederLeesahKafkaMessage(id, aktivTom = LocalDate.now()))
-
-            TestDb.getNarmesteleder(pasientFnr = "12345678910").size shouldBeEqualTo 0
-        }
-    }
-})
+    })
 
 fun createNarmestelederLeesahKafkaMessage(
     id: UUID,

@@ -1,6 +1,7 @@
 package no.nav.syfo.sykmelding
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.time.LocalDate
 import no.nav.syfo.application.metrics.SYKMELDING_TOPIC_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
@@ -16,7 +17,6 @@ import no.nav.syfo.sykmelding.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.sykmelding.pdl.model.formatName
 import no.nav.syfo.sykmelding.pdl.service.PdlPersonService
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import java.time.LocalDate
 
 class SykmeldingService(
     private val sykmeldingDb: SykmeldingDb,
@@ -34,13 +34,17 @@ class SykmeldingService(
             if (cluster != "dev-gcp") {
                 throw ex
             } else {
-                log.info("Ignoring sykmelding when person is not found in pdl for sykmelding: ${record.key()}")
+                log.info(
+                    "Ignoring sykmelding when person is not found in pdl for sykmelding: ${record.key()}"
+                )
             }
         } catch (ex: SyketilfelleNotFoundException) {
             if (cluster != "dev-gcp") {
                 throw ex
             } else {
-                log.info("Ignoring sykmelding when syketilfelle is not found in syfosyketilfelle for sykmelding: ${record.key()}")
+                log.info(
+                    "Ignoring sykmelding when syketilfelle is not found in syfosyketilfelle for sykmelding: ${record.key()}"
+                )
             }
         } catch (e: Exception) {
             log.error("Noe gikk galt ved mottak av sendt sykmelding med id ${record.key()}")
@@ -48,7 +52,10 @@ class SykmeldingService(
         }
     }
 
-    suspend fun handleSendtSykmeldingKafkaMessage(sykmeldingId: String, sykmelding: SendtSykmeldingKafkaMessage?) {
+    suspend fun handleSendtSykmeldingKafkaMessage(
+        sykmeldingId: String,
+        sykmelding: SendtSykmeldingKafkaMessage?
+    ) {
         val existingSykmelding = sykmeldingDb.getSykmeldingInfo(sykmeldingId)
         when (sykmelding) {
             null -> deleteSykmelding(sykmeldingId, existingSykmelding)
@@ -65,7 +72,9 @@ class SykmeldingService(
         val sisteTom = finnSisteTom(sykmelding.sykmelding.sykmeldingsperioder)
         if (sisteTom.isAfter(LocalDate.now().minusMonths(4))) {
             if (sykmelding.event.arbeidsgiver == null) {
-                throw IllegalStateException("Mottatt sendt sykmelding uten arbeidsgiver, $sykmeldingId")
+                throw IllegalStateException(
+                    "Mottatt sendt sykmelding uten arbeidsgiver, $sykmeldingId"
+                )
             }
             sykmeldingDb.insertOrUpdateSykmelding(toSykmeldingDbModel(sykmelding, sisteTom))
             updateSykmeldt(sykmelding.kafkaMetadata.fnr)
@@ -74,7 +83,10 @@ class SykmeldingService(
         }
     }
 
-    private suspend fun deleteSykmelding(sykmeldingId: String, existingSykmelding: SykmeldingInfo?) {
+    private suspend fun deleteSykmelding(
+        sykmeldingId: String,
+        existingSykmelding: SykmeldingInfo?
+    ) {
         if (existingSykmelding != null) {
             log.info("Sletter sykmelding med id $sykmeldingId")
             sykmeldingDb.remove(sykmeldingId)
@@ -88,12 +100,14 @@ class SykmeldingService(
         when (val latestSykmelding = sykmeldingInfos.maxByOrNull { it.latestTom }) {
             null -> sykmeldingDb.deleteSykmeldt(fnr)
             else -> {
-                val person = pdlPersonService.getPerson(fnr = fnr, callId = latestSykmelding.sykmeldingId)
+                val person =
+                    pdlPersonService.getPerson(fnr = fnr, callId = latestSykmelding.sykmeldingId)
 
-                val startdato = syfoSyketilfelleClient.finnStartdato(
-                    fnr = fnr,
-                    sykmeldingId = latestSykmelding.sykmeldingId,
-                )
+                val startdato =
+                    syfoSyketilfelleClient.finnStartdato(
+                        fnr = fnr,
+                        sykmeldingId = latestSykmelding.sykmeldingId,
+                    )
 
                 sykmeldingDb.insertOrUpdateSykmeldt(
                     SykmeldtDbModel(

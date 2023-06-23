@@ -15,6 +15,8 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
 import io.prometheus.client.hotspot.DefaultExports
+import kotlin.collections.set
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
@@ -44,16 +46,15 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import kotlin.collections.set
-import kotlin.time.ExperimentalTime
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.dinesykmeldte-kafka")
-val objectMapper: ObjectMapper = ObjectMapper().apply {
-    registerKotlinModule()
-    registerModule(JavaTimeModule())
-    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-}
+val objectMapper: ObjectMapper =
+    ObjectMapper().apply {
+        registerKotlinModule()
+        registerModule(JavaTimeModule())
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    }
 
 @ExperimentalTime
 @DelicateCoroutinesApi
@@ -61,10 +62,11 @@ fun main() {
     val env = Environment()
     DefaultExports.initialize()
     val applicationState = ApplicationState()
-    val applicationEngine = createApplicationEngine(
-        env,
-        applicationState,
-    )
+    val applicationEngine =
+        createApplicationEngine(
+            env,
+            applicationState,
+        )
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(ContentNegotiation) {
             jackson {
@@ -77,7 +79,8 @@ fun main() {
         HttpResponseValidator {
             handleResponseExceptionWithRequest { exception, _ ->
                 when (exception) {
-                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
+                    is SocketTimeoutException ->
+                        throw ServiceUnavailableException(exception.message)
                 }
             }
         }
@@ -89,7 +92,9 @@ fun main() {
             }
             retryIf(maxRetries) { request, response ->
                 if (response.status.value.let { it in 500..599 }) {
-                    log.warn("Retrying for statuscode ${response.status.value}, for url ${request.url}")
+                    log.warn(
+                        "Retrying for statuscode ${response.status.value}, for url ${request.url}"
+                    )
                     true
                 } else {
                     false
@@ -98,46 +103,62 @@ fun main() {
         }
     }
     val httpClient = HttpClient(Apache, config)
-    val accessTokenClient = AccessTokenClient(env.aadAccessTokenUrl, env.clientId, env.clientSecret, httpClient)
-    val pdlClient = PdlClient(
-        httpClient,
-        env.pdlGraphqlPath,
-        PdlClient::class.java.getResource("/graphql/getPerson.graphql")!!.readText().replace(Regex("[\n\t]"), ""),
-    )
+    val accessTokenClient =
+        AccessTokenClient(env.aadAccessTokenUrl, env.clientId, env.clientSecret, httpClient)
+    val pdlClient =
+        PdlClient(
+            httpClient,
+            env.pdlGraphqlPath,
+            PdlClient::class
+                .java
+                .getResource("/graphql/getPerson.graphql")!!
+                .readText()
+                .replace(Regex("[\n\t]"), ""),
+        )
     val pdlPersonService = PdlPersonService(pdlClient, accessTokenClient, env.pdlScope)
 
-    val syfoSyketilfelleClient = SyfoSyketilfelleClient(
-        syketilfelleEndpointURL = env.syketilfelleEndpointURL,
-        accessTokenClient = accessTokenClient,
-        syketilfelleScope = env.syketilfelleScope,
-        httpClient = httpClient,
-    )
+    val syfoSyketilfelleClient =
+        SyfoSyketilfelleClient(
+            syketilfelleEndpointURL = env.syketilfelleEndpointURL,
+            accessTokenClient = accessTokenClient,
+            syketilfelleScope = env.syketilfelleScope,
+            httpClient = httpClient,
+        )
 
-    val kafkaConsumer = KafkaConsumer(
-        KafkaUtils.getAivenKafkaConfig().also {
-            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
-        }.toConsumerConfig("dinesykmeldte-backend", StringDeserializer::class),
-        StringDeserializer(),
-        StringDeserializer(),
-    )
+    val kafkaConsumer =
+        KafkaConsumer(
+            KafkaUtils.getAivenKafkaConfig()
+                .also {
+                    it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+                    it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
+                }
+                .toConsumerConfig("dinesykmeldte-backend", StringDeserializer::class),
+            StringDeserializer(),
+            StringDeserializer(),
+        )
     val database = GcpDatabase(env)
 
     val narmestelederService = NarmestelederService(NarmestelederDb(database))
     val sykmeldingService =
-        SykmeldingService(SykmeldingDb(database), pdlPersonService, syfoSyketilfelleClient, env.cluster)
+        SykmeldingService(
+            SykmeldingDb(database),
+            pdlPersonService,
+            syfoSyketilfelleClient,
+            env.cluster
+        )
     val soknadService = SoknadService(SoknadDb(database))
     val hendelserService = HendelserService(HendelserDb(database))
 
-    val commonKafkaService = CommonKafkaService(
-        kafkaConsumer,
-        applicationState,
-        env,
-        narmestelederService,
-        sykmeldingService,
-        soknadService,
-        hendelserService,
-    )
+    val commonKafkaService =
+        CommonKafkaService(
+            kafkaConsumer,
+            applicationState,
+            env,
+            narmestelederService,
+            sykmeldingService,
+            soknadService,
+            hendelserService,
+        )
     commonKafkaService.startConsumer()
     val leaderElection = LeaderElection(httpClient, env.electorPath)
     DeleteDataService(DeleteDataDb(database), leaderElection, applicationState).start()

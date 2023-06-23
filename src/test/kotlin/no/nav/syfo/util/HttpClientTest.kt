@@ -28,9 +28,9 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.util.pipeline.PipelineContext
+import java.net.ServerSocket
 import no.nav.syfo.common.exception.ServiceUnavailableException
 import no.nav.syfo.log
-import java.net.ServerSocket
 
 data class ResponseData(
     val httpStatusCode: HttpStatusCode,
@@ -42,38 +42,38 @@ class HttpClientTest {
 
     val mockHttpServerPort = ServerSocket(0).use { it.localPort }
     val mockHttpServerUrl = "http://localhost:$mockHttpServerPort"
-    val mockServer = embeddedServer(Netty, mockHttpServerPort) {
-        install(ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    val mockServer =
+        embeddedServer(Netty, mockHttpServerPort) {
+                install(ContentNegotiation) {
+                    jackson {
+                        registerKotlinModule()
+                        registerModule(JavaTimeModule())
+                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    }
+                }
+                routing {
+                    get("*") { response() }
+                    post("*") { response() }
+                }
             }
-        }
-        routing {
-            get("*") {
-                response()
-            }
-            post("*") {
-                response()
-            }
-        }
-    }.start(false)
+            .start(false)
 
     private suspend fun PipelineContext<Unit, ApplicationCall>.response() {
         when (val response = responseFunction.invoke()) {
             null -> call.respond(HttpStatusCode.OK)
             else -> {
-                call.respondText(response.content, ContentType.Application.Json, response.httpStatusCode)
+                call.respondText(
+                    response.content,
+                    ContentType.Application.Json,
+                    response.httpStatusCode
+                )
                 call.respond(response.httpStatusCode, response.content)
             }
         }
     }
 
-    var responseFunction: suspend () -> ResponseData? = {
-        responseData
-    }
+    var responseFunction: suspend () -> ResponseData? = { responseData }
 
     var responseData: ResponseData? = null
 
@@ -89,43 +89,45 @@ class HttpClientTest {
         responseFunction = { ResponseData(HttpStatusCode.OK, data) }
     }
 
-    val httpClient = HttpClient(Apache) {
-        defaultRequest {
-            host = "localhost"
-            port = mockHttpServerPort
-        }
-        HttpResponseValidator {
-            handleResponseExceptionWithRequest { exception, _ ->
-                when (exception) {
-                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
+    val httpClient =
+        HttpClient(Apache) {
+            defaultRequest {
+                host = "localhost"
+                port = mockHttpServerPort
+            }
+            HttpResponseValidator {
+                handleResponseExceptionWithRequest { exception, _ ->
+                    when (exception) {
+                        is SocketTimeoutException ->
+                            throw ServiceUnavailableException(exception.message)
+                    }
                 }
             }
-        }
-        install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+                jackson {
+                    registerKotlinModule()
+                    registerModule(JavaTimeModule())
+                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
             }
-        }
-        install(HttpTimeout) {
-            socketTimeoutMillis = 1L
-        }
-        install(HttpRequestRetry) {
-            constantDelay(100, 0, false)
-            retryOnExceptionIf(3) { request, throwable ->
-                log.warn("Caught exception ${throwable.message}, for url ${request.url}")
-                true
-            }
-            retryIf(maxRetries) { request, response ->
-                if (response.status.value.let { it in 500..599 }) {
-                    log.warn("Retrying for statuscode ${response.status.value}, for url ${request.url}")
+            install(HttpTimeout) { socketTimeoutMillis = 1L }
+            install(HttpRequestRetry) {
+                constantDelay(100, 0, false)
+                retryOnExceptionIf(3) { request, throwable ->
+                    log.warn("Caught exception ${throwable.message}, for url ${request.url}")
                     true
-                } else {
-                    false
+                }
+                retryIf(maxRetries) { request, response ->
+                    if (response.status.value.let { it in 500..599 }) {
+                        log.warn(
+                            "Retrying for statuscode ${response.status.value}, for url ${request.url}"
+                        )
+                        true
+                    } else {
+                        false
+                    }
                 }
             }
         }
-    }
 }

@@ -24,18 +24,31 @@ class HendelserService(
 
     fun handleHendelse(dineSykmeldteHendelse: DineSykmeldteHendelse) {
         if (dineSykmeldteHendelse.opprettHendelse != null) {
-            hendelserDb.insertHendelse(opprettHendelseTilHendelseDbModel(dineSykmeldteHendelse.id, dineSykmeldteHendelse.opprettHendelse))
+            hendelserDb.insertHendelse(
+                opprettHendelseTilHendelseDbModel(
+                    dineSykmeldteHendelse.id,
+                    dineSykmeldteHendelse.opprettHendelse
+                )
+            )
             HENDELSE_TOPIC_COUNTER.labels("opprett").inc()
         } else if (dineSykmeldteHendelse.ferdigstillHendelse != null) {
-            hendelserDb.ferdigstillHendelse(dineSykmeldteHendelse.id, dineSykmeldteHendelse.ferdigstillHendelse.timestamp)
+            hendelserDb.ferdigstillHendelse(
+                dineSykmeldteHendelse.id,
+                dineSykmeldteHendelse.ferdigstillHendelse.timestamp
+            )
             HENDELSE_TOPIC_COUNTER.labels("ferdigstill").inc()
         } else {
-            log.error("Har mottatt hendelse som ikke er oppretting eller ferdigstilling for id ${dineSykmeldteHendelse.id}")
+            log.error(
+                "Har mottatt hendelse som ikke er oppretting eller ferdigstilling for id ${dineSykmeldteHendelse.id}"
+            )
             throw IllegalStateException("Mottatt hendelse er ikke oppretting eller ferdigstilling")
         }
     }
 
-    private fun opprettHendelseTilHendelseDbModel(hendelseId: String, opprettHendelse: OpprettHendelse): HendelseDbModel {
+    private fun opprettHendelseTilHendelseDbModel(
+        hendelseId: String,
+        opprettHendelse: OpprettHendelse
+    ): HendelseDbModel {
         return HendelseDbModel(
             id = hendelseId,
             pasientFnr = opprettHendelse.ansattFnr,

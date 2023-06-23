@@ -1,6 +1,7 @@
 package no.nav.syfo.soknad
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.time.LocalDate
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.application.metrics.SOKNAD_TOPIC_COUNTER
@@ -8,7 +9,6 @@ import no.nav.syfo.log
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDb
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import java.time.LocalDate
 
 class SoknadService(
     private val soknadDb: SoknadDb,
@@ -26,7 +26,8 @@ class SoknadService(
         if (shouldHandleSoknad(sykepengesoknad)) {
             when (sykepengesoknad.status) {
                 SoknadsstatusDTO.NY -> soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
-                SoknadsstatusDTO.FREMTIDIG -> soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
+                SoknadsstatusDTO.FREMTIDIG ->
+                    soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
                 SoknadsstatusDTO.SENDT -> handleSendt(sykepengesoknad)
                 SoknadsstatusDTO.KORRIGERT -> handleSendt(sykepengesoknad)
                 SoknadsstatusDTO.AVBRUTT -> soknadDb.deleteSoknad(sykepengesoknad.id)

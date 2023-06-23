@@ -1,11 +1,11 @@
 package no.nav.syfo.common.delete
 
-import no.nav.syfo.database.DatabaseInterface
 import java.sql.Connection
 import java.sql.Date
 import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDate
+import no.nav.syfo.database.DatabaseInterface
 
 class DeleteDataDb(private val database: DatabaseInterface) {
     fun deleteOldData(date: LocalDate): DeleteResult {
@@ -23,45 +23,54 @@ class DeleteDataDb(private val database: DatabaseInterface) {
     }
 
     private fun deleteSoknader(connection: Connection, date: LocalDate): Int {
-        return connection.prepareStatement(
-            """
+        return connection
+            .prepareStatement(
+                """
             delete from soknad where tom < ?;
         """,
-        ).use { ps ->
-            ps.setDate(1, Date.valueOf(date))
-            ps.executeUpdate()
-        }
+            )
+            .use { ps ->
+                ps.setDate(1, Date.valueOf(date))
+                ps.executeUpdate()
+            }
     }
 
     private fun deleteSykmelding(connection: Connection, date: LocalDate): Int {
-        return connection.prepareStatement(
-            """
+        return connection
+            .prepareStatement(
+                """
             delete from sykmelding where latest_tom < ?;
         """,
-        ).use { ps ->
-            ps.setDate(1, Date.valueOf(date))
-            ps.executeUpdate()
-        }
+            )
+            .use { ps ->
+                ps.setDate(1, Date.valueOf(date))
+                ps.executeUpdate()
+            }
     }
 
     private fun deleteSykmeldt(connection: Connection, date: LocalDate): Int {
-        return connection.prepareStatement(
-            """
+        return connection
+            .prepareStatement(
+                """
             delete from sykmeldt where latest_tom < ?;
         """,
-        ).use { ps ->
-            ps.setDate(1, Date.valueOf(date))
-            ps.executeUpdate()
-        }
+            )
+            .use { ps ->
+                ps.setDate(1, Date.valueOf(date))
+                ps.executeUpdate()
+            }
     }
+
     private fun deleteHendelser(connection: Connection): Int {
-        return connection.prepareStatement(
-            """
+        return connection
+            .prepareStatement(
+                """
             delete from hendelser h where utlopstidspunkt < ? OR NOT EXISTS(select 1 from sykmeldt s where s.pasient_fnr = h.pasient_fnr);
         """,
-        ).use { ps ->
-            ps.setTimestamp(1, Timestamp.from(Instant.now()))
-            ps.executeUpdate()
-        }
+            )
+            .use { ps ->
+                ps.setTimestamp(1, Timestamp.from(Instant.now()))
+                ps.executeUpdate()
+            }
     }
 }

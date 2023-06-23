@@ -1,5 +1,6 @@
 package no.nav.syfo.sykmelding.pdl.service
 
+import java.lang.RuntimeException
 import no.nav.syfo.azuread.AccessTokenClient
 import no.nav.syfo.log
 import no.nav.syfo.sykmelding.pdl.client.PdlClient
@@ -7,7 +8,6 @@ import no.nav.syfo.sykmelding.pdl.client.model.GetPersonResponse
 import no.nav.syfo.sykmelding.pdl.exceptions.NameNotFoundInPdlException
 import no.nav.syfo.sykmelding.pdl.model.Navn
 import no.nav.syfo.sykmelding.pdl.model.PdlPerson
-import java.lang.RuntimeException
 
 class PdlPersonService(
     private val pdlClient: PdlClient,
@@ -35,7 +35,11 @@ class PdlPersonService(
 
         errors?.forEach {
             log.error("PDL returnerte feilmelding: ${it.message}, ${it.extensions?.code}, $callId")
-            it.extensions?.details?.let { details -> log.error("Type: ${details.type}, cause: ${details.cause}, policy: ${details.policy}, $callId") }
+            it.extensions?.details?.let { details ->
+                log.error(
+                    "Type: ${details.type}, cause: ${details.cause}, policy: ${details.policy}, $callId"
+                )
+            }
         }
 
         if (navn == null) {
@@ -46,7 +50,12 @@ class PdlPersonService(
         }
 
         return PdlPerson(
-            navn = Navn(fornavn = navn.fornavn, mellomnavn = navn.mellomnavn, etternavn = navn.etternavn),
+            navn =
+                Navn(
+                    fornavn = navn.fornavn,
+                    mellomnavn = navn.mellomnavn,
+                    etternavn = navn.etternavn
+                ),
             aktorId = aktorId,
         )
     }

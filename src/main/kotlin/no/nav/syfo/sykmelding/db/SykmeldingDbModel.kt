@@ -1,10 +1,10 @@
 package no.nav.syfo.sykmelding.db
 
+import java.time.LocalDate
+import java.time.OffsetDateTime
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.objectMapper
 import org.postgresql.util.PGobject
-import java.time.LocalDate
-import java.time.OffsetDateTime
 
 data class SykmeldingDbModel(
     val sykmeldingId: String,
@@ -19,12 +19,14 @@ data class SykmeldingDbModel(
     val egenmeldingsdager: List<LocalDate>?,
 )
 
-fun ArbeidsgiverSykmelding.toPGObject() = PGobject().also {
-    it.type = "json"
-    it.value = objectMapper.writeValueAsString(this)
-}
+fun ArbeidsgiverSykmelding.toPGObject() =
+    PGobject().also {
+        it.type = "json"
+        it.value = objectMapper.writeValueAsString(this)
+    }
 
-fun List<LocalDate>.toPGObject() = PGobject().also {
-    it.type = "json"
-    it.value = objectMapper.writeValueAsString(this)
-}
+fun List<LocalDate>.toPGObject() =
+    PGobject().also {
+        it.type = "json"
+        it.value = objectMapper.writeValueAsString(this)
+    }

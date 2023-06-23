@@ -1,5 +1,7 @@
 package no.nav.syfo.common.kafka
 
+import java.time.Duration
+import java.time.Instant
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -14,8 +16,6 @@ import no.nav.syfo.soknad.SoknadService
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.util.Unbounded
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import java.time.Duration
-import java.time.Instant
 
 class CommonKafkaService(
     private val kafkaConsumer: KafkaConsumer<String, String>,
@@ -45,7 +45,10 @@ class CommonKafkaService(
                     )
                     start()
                 } catch (ex: Exception) {
-                    log.error("Error running kafka consumer, unsubscribing and waiting 10 seconds for retry", ex)
+                    log.error(
+                        "Error running kafka consumer, unsubscribing and waiting 10 seconds for retry",
+                        ex
+                    )
                     kafkaConsumer.unsubscribe()
                     delay(10_000)
                 }
@@ -60,10 +63,14 @@ class CommonKafkaService(
             records.forEach {
                 when (it.topic()) {
                     environment.narmestelederLeesahTopic -> narmestelederService.updateNl(it)
-                    environment.sendtSykmeldingTopic -> sykmeldingService.handleSendtSykmeldingKafkaMessage(it)
+                    environment.sendtSykmeldingTopic ->
+                        sykmeldingService.handleSendtSykmeldingKafkaMessage(it)
                     environment.sykepengesoknadTopic -> soknadService.handleSykepengesoknad(it)
                     environment.hendelserTopic -> hendelserService.handleHendelse(it)
-                    else -> throw IllegalStateException("Har mottatt melding på ukjent topic: ${it.topic()}")
+                    else ->
+                        throw IllegalStateException(
+                            "Har mottatt melding på ukjent topic: ${it.topic()}"
+                        )
                 }
             }
             processedMessages += records.count()
