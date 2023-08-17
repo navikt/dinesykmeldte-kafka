@@ -146,7 +146,7 @@ fun main() {
             syfoSyketilfelleClient,
             env.cluster
         )
-    val soknadService = SoknadService(SoknadDb(database))
+    val soknadService = SoknadService(SoknadDb(database), env.cluster)
     val hendelserService = HendelserService(HendelserDb(database))
 
     val commonKafkaService =
