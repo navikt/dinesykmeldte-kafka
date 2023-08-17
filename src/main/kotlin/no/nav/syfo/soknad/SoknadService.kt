@@ -1,5 +1,6 @@
 package no.nav.syfo.soknad
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.time.LocalDate
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
@@ -12,13 +13,23 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 
 class SoknadService(
     private val soknadDb: SoknadDb,
+    private val cluster: String,
 ) {
     suspend fun handleSykepengesoknad(record: ConsumerRecord<String, String>) {
         try {
             handleSykepengesoknad(objectMapper.readValue<SykepengesoknadDTO>(record.value()))
-        } catch (e: Exception) {
+        } catch (exception: InvalidFormatException) {
+            if (cluster != "dev-gcp") {
+                log.error("Noe gikk galt ved mottak av sykepengesøknad med id ${record.key()}")
+                throw exception
+            } else {
+                log.info(
+                    "Ignoring sykepengesøknad when error InvalidFormatException med id: ${record.key()}"
+                )
+            }
+        } catch (exception: Exception) {
             log.error("Noe gikk galt ved mottak av sykepengesøknad med id ${record.key()}")
-            throw e
+            throw exception
         }
     }
 

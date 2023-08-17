@@ -25,7 +25,7 @@ import org.amshove.kluent.shouldNotBeEqualTo
 class SoknadServiceTest :
     FunSpec({
         val database = SoknadDb(TestDb.database)
-        val soknadService = SoknadService(database)
+        val soknadService = SoknadService(database, "localhost")
         val sykmeldingDb = SykmeldingDb(TestDb.database)
 
         beforeEach { TestDb.clearAllData() }

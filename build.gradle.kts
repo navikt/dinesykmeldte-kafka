@@ -1,6 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.syfo"
 version = "1.0.0"
@@ -12,7 +11,7 @@ val logbackVersion = "1.4.11"
 val ktorVersion = "2.3.3"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "1.9df1108"
+val smCommonVersion = "1.0.14"
 val mockkVersion = "1.13.7"
 val nimbusdsVersion = "9.31"
 val hikariVersion = "5.0.1"
@@ -20,7 +19,7 @@ val flywayVersion = "9.21.1"
 val postgresVersion = "42.6.0"
 val testContainerVersion = "1.18.3"
 val kotlinVersion = "1.9.0"
-val sykepengesoknadKafkaVersion = "2022.10.28-10.24-aa0eced7"
+val sykepengesoknadKafkaVersion = "2023.04.26-09.43-58888de2"
 val kotestVersion = "5.6.2"
 val googlePostgresVersion = "1.13.1"
 val googleOauthVersion = "1.34.1"

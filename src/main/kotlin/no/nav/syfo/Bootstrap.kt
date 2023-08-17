@@ -127,7 +127,7 @@ fun main() {
 
     val kafkaConsumer =
         KafkaConsumer(
-            KafkaUtils.getAivenKafkaConfig()
+            KafkaUtils.getAivenKafkaConfig("dinesykmeldte-backend-consumer")
                 .also {
                     it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
                     it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 100
@@ -146,7 +146,7 @@ fun main() {
             syfoSyketilfelleClient,
             env.cluster
         )
-    val soknadService = SoknadService(SoknadDb(database))
+    val soknadService = SoknadService(SoknadDb(database), env.cluster)
     val hendelserService = HendelserService(HendelserDb(database))
 
     val commonKafkaService =
