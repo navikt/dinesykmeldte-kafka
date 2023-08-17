@@ -94,6 +94,7 @@ fun createArbeidsgiverSykmelding(
         harRedusertArbeidsgiverperiode = false,
         merknader = null,
         utenlandskSykmelding = null,
+        signaturDato = null
     )
 
 fun createSykmeldingsperiode(
