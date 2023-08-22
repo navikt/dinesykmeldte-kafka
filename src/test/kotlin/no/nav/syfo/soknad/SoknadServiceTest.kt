@@ -68,7 +68,8 @@ class SoknadServiceTest :
                 sykepengesoknadDTO.sporsmal!!.find {
                     it.tag == "UTENLANDSK_SYKMELDING_BOSTED"
                 } shouldNotBeEqualTo null
-                sykepengesoknadDTO.sporsmal!!.find { it.tag == "YRKESSKADE" } shouldNotBeEqualTo null
+                sykepengesoknadDTO.sporsmal!!.find { it.tag == "YRKESSKADE" } shouldNotBeEqualTo
+                    null
                 sykepengesoknadDTO.sporsmal!!.find { it.tag == "YRKESSKADE_V2" } shouldNotBeEqualTo
                     null
                 sykepengesoknadDTO.sporsmal!!.find {
