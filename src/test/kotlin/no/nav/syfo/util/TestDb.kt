@@ -174,7 +174,8 @@ class TestDb private constructor() {
                     getTimestamp("sendt_til_arbeidsgiver_dato")
                         ?.toInstant()
                         ?.atOffset(ZoneOffset.UTC),
-                egenmeldingsdager = objectMapper.readValue(getString("egenmeldingsdager")),
+                egenmeldingsdager =
+                    getString("egenmeldingsdager")?.let { objectMapper.readValue(it) },
             )
 
         fun getSoknad(soknadId: String): SoknadDbModel? {

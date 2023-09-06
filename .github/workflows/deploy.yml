@@ -1,5 +1,11 @@
 name: Deploy kafka to dev and prod
 on: push
+permissions:
+  security-events: write
+  actions: read
+  packages: write
+  id-token: write
+  contents: read
 
 jobs:
   jar-app:

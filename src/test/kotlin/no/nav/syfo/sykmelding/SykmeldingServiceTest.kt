@@ -339,34 +339,39 @@ class SykmeldingServiceTest :
                 val sykmeldingId = UUID.randomUUID().toString()
                 val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
 
-                val egenmeldingsDager = listOf(LocalDate.of(2023, 1,1))
-                val egenmeldingsSporsmål = SporsmalOgSvarDTO(
-                    "egenmeldingsdager",
+                val egenmeldingsDager = listOf(LocalDate.of(2023, 1, 1))
+                val egenmeldingsSporsmål =
+                    SporsmalOgSvarDTO(
+                        "egenmeldingsdager",
                         ShortNameDTO.EGENMELDINGSDAGER,
                         SvartypeDTO.DAGER,
                         objectMapper.writeValueAsString(egenmeldingsDager)
-                )
-                sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding.copy(
-                    event = sendtSykmelding.event.copy(
-                        sporsmals = listOf(egenmeldingsSporsmål)
                     )
-                ))
+                sykmeldingService.handleSendtSykmeldingKafkaMessage(
+                    sykmeldingId,
+                    sendtSykmelding.copy(
+                        event = sendtSykmelding.event.copy(sporsmals = listOf(egenmeldingsSporsmål))
+                    )
+                )
                 val sykmelding = TestDb.getSykmelding(sykmeldingId)
                 sykmelding?.egenmeldingsdager shouldBeEqualTo egenmeldingsDager
 
-                val egenmeldingsDager2 = listOf(LocalDate.of(2023, 1,5))
+                val egenmeldingsDager2 = listOf(LocalDate.of(2023, 1, 5))
 
-                val egenmeldingsSporsmål2 = SporsmalOgSvarDTO(
-                    "egenmeldingsdager",
-                    ShortNameDTO.EGENMELDINGSDAGER,
-                    SvartypeDTO.DAGER,
-                    objectMapper.writeValueAsString(egenmeldingsDager2)
-                )
-                sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding.copy(
-                    event = sendtSykmelding.event.copy(
-                        sporsmals = listOf(egenmeldingsSporsmål2)
+                val egenmeldingsSporsmål2 =
+                    SporsmalOgSvarDTO(
+                        "egenmeldingsdager",
+                        ShortNameDTO.EGENMELDINGSDAGER,
+                        SvartypeDTO.DAGER,
+                        objectMapper.writeValueAsString(egenmeldingsDager2)
                     )
-                ))
+                sykmeldingService.handleSendtSykmeldingKafkaMessage(
+                    sykmeldingId,
+                    sendtSykmelding.copy(
+                        event =
+                            sendtSykmelding.event.copy(sporsmals = listOf(egenmeldingsSporsmål2))
+                    )
+                )
 
                 val oppdatertSykmelding = TestDb.getSykmelding(sykmeldingId)
                 oppdatertSykmelding?.egenmeldingsdager shouldBeEqualTo egenmeldingsDager2
@@ -412,7 +417,6 @@ fun getSendtSykmeldingKafkaMessage(
             "SENDT",
             ArbeidsgiverStatusDTO("88888888", null, "Bedriften AS"),
             null,
-
         ),
     )
 
