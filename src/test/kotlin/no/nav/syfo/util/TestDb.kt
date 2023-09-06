@@ -1,5 +1,6 @@
 package no.nav.syfo.util
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import java.sql.Connection
@@ -173,7 +174,7 @@ class TestDb private constructor() {
                     getTimestamp("sendt_til_arbeidsgiver_dato")
                         ?.toInstant()
                         ?.atOffset(ZoneOffset.UTC),
-                egenmeldingsdager = emptyList(),
+                egenmeldingsdager = objectMapper.readValue(getString("egenmeldingsdager")),
             )
 
         fun getSoknad(soknadId: String): SoknadDbModel? {

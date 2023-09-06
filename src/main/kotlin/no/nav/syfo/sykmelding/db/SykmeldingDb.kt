@@ -45,7 +45,8 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                             lest = excluded.lest,
                             timestamp = excluded.timestamp,
                             latest_tom = excluded.latest_tom,
-                            sendt_til_arbeidsgiver_dato = excluded.sendt_til_arbeidsgiver_dato;""",
+                            sendt_til_arbeidsgiver_dato = excluded.sendt_til_arbeidsgiver_dato,
+                            egenmeldingsdager = excluded.egenmeldingsdager;""",
             )
             .use { preparedStatement ->
                 val sendtTilArbeidsgiverDato =

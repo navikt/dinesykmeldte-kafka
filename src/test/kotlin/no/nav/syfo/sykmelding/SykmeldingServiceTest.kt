@@ -18,6 +18,9 @@ import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO
 import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
+import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
+import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
+import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
@@ -331,6 +334,43 @@ class SykmeldingServiceTest :
                 val oppdatertSoknad = TestDb.getSoknadForSykmelding(sykmeldingId)
                 oppdatertSoknad?.pasientFnr shouldBeEqualTo "11223344556"
             }
+
+            test("Oppdatert sykmelding skal inneholde nye egenmeldingsdager") {
+                val sykmeldingId = UUID.randomUUID().toString()
+                val sendtSykmelding = getSendtSykmeldingKafkaMessage(sykmeldingId)
+
+                val egenmeldingsDager = listOf(LocalDate.of(2023, 1,1))
+                val egenmeldingsSporsmål = SporsmalOgSvarDTO(
+                    "egenmeldingsdager",
+                        ShortNameDTO.EGENMELDINGSDAGER,
+                        SvartypeDTO.DAGER,
+                        objectMapper.writeValueAsString(egenmeldingsDager)
+                )
+                sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding.copy(
+                    event = sendtSykmelding.event.copy(
+                        sporsmals = listOf(egenmeldingsSporsmål)
+                    )
+                ))
+                val sykmelding = TestDb.getSykmelding(sykmeldingId)
+                sykmelding?.egenmeldingsdager shouldBeEqualTo egenmeldingsDager
+
+                val egenmeldingsDager2 = listOf(LocalDate.of(2023, 1,5))
+
+                val egenmeldingsSporsmål2 = SporsmalOgSvarDTO(
+                    "egenmeldingsdager",
+                    ShortNameDTO.EGENMELDINGSDAGER,
+                    SvartypeDTO.DAGER,
+                    objectMapper.writeValueAsString(egenmeldingsDager2)
+                )
+                sykmeldingService.handleSendtSykmeldingKafkaMessage(sykmeldingId, sendtSykmelding.copy(
+                    event = sendtSykmelding.event.copy(
+                        sporsmals = listOf(egenmeldingsSporsmål2)
+                    )
+                ))
+
+                val oppdatertSykmelding = TestDb.getSykmelding(sykmeldingId)
+                oppdatertSykmelding?.egenmeldingsdager shouldBeEqualTo egenmeldingsDager2
+            }
         }
     })
 
@@ -372,6 +412,7 @@ fun getSendtSykmeldingKafkaMessage(
             "SENDT",
             ArbeidsgiverStatusDTO("88888888", null, "Bedriften AS"),
             null,
+
         ),
     )
 
