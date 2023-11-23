@@ -15,10 +15,10 @@ val smCommonVersion = "2.0.6"
 val mockkVersion = "1.13.8"
 val nimbusdsVersion = "9.37.1"
 val hikariVersion = "5.1.0"
-val flywayVersion = "10.0.1"
-val postgresVersion = "42.6.0"
-val testContainerVersion = "1.19.2"
-val kotlinVersion = "1.9.20"
+val flywayVersion = "10.1.0"
+val postgresVersion = "42.7.0"
+val testContainerVersion = "1.19.3"
+val kotlinVersion = "1.9.21"
 val sykepengesoknadKafkaVersion = "2023.10.31-09.28-24a9b46f"
 val kotestVersion = "5.8.0"
 val googlePostgresVersion = "1.15.0"
@@ -32,7 +32,7 @@ tasks.withType<Jar> {
 
 plugins {
     id("com.diffplug.spotless") version "6.22.0"
-    kotlin("jvm") version "1.9.20"
+    kotlin("jvm") version "1.9.21"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.cyclonedx.bom") version "1.8.1"
 }
