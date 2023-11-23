@@ -32,7 +32,7 @@ tasks.withType<Jar> {
 
 plugins {
     id("com.diffplug.spotless") version "6.22.0"
-    kotlin("jvm") version "1.9.20"
+    kotlin("jvm") version "1.9.21"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.cyclonedx.bom") version "1.8.1"
 }
