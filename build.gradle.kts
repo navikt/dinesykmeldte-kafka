@@ -13,7 +13,7 @@ val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
 val smCommonVersion = "2.0.6"
 val mockkVersion = "1.13.8"
-val nimbusdsVersion = "9.37.1"
+val nimbusdsVersion = "9.37.2"
 val hikariVersion = "5.1.0"
 val flywayVersion = "10.1.0"
 val postgresVersion = "42.7.0"
@@ -31,7 +31,7 @@ tasks.withType<Jar> {
 }
 
 plugins {
-    id("com.diffplug.spotless") version "6.23.2"
+    id("com.diffplug.spotless") version "6.23.3"
     kotlin("jvm") version "1.9.21"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.cyclonedx.bom") version "1.8.1"
