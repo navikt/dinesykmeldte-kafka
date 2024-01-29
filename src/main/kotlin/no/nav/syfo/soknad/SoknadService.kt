@@ -9,6 +9,8 @@ import no.nav.syfo.application.metrics.SOKNAD_TOPIC_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDb
+import no.nav.syfo.soknad.model.Soknad
+import no.nav.syfo.soknad.model.SoknadStatus
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
 class SoknadService(
@@ -17,7 +19,7 @@ class SoknadService(
 ) {
     suspend fun handleSykepengesoknad(record: ConsumerRecord<String, String>) {
         try {
-            handleSykepengesoknad(objectMapper.readValue<SykepengesoknadDTO>(record.value()))
+            handleSykepengesoknad(objectMapper.readValue<Soknad>(record.value()))
         } catch (exception: InvalidFormatException) {
             if (cluster != "dev-gcp") {
                 log.error("Noe gikk galt ved mottak av sykepengesøknad med id ${record.key()}")
@@ -33,17 +35,16 @@ class SoknadService(
         }
     }
 
-    suspend fun handleSykepengesoknad(sykepengesoknad: SykepengesoknadDTO) {
+    suspend fun handleSykepengesoknad(sykepengesoknad: Soknad) {
         if (shouldHandleSoknad(sykepengesoknad)) {
             when (sykepengesoknad.status) {
-                SoknadsstatusDTO.NY -> soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
-                SoknadsstatusDTO.FREMTIDIG ->
-                    soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
-                SoknadsstatusDTO.SENDT -> handleSendt(sykepengesoknad)
-                SoknadsstatusDTO.KORRIGERT -> handleSendt(sykepengesoknad)
-                SoknadsstatusDTO.AVBRUTT -> soknadDb.deleteSoknad(sykepengesoknad.id)
-                SoknadsstatusDTO.SLETTET -> soknadDb.deleteSoknad(sykepengesoknad.id)
-                SoknadsstatusDTO.UTGAATT -> soknadDb.deleteSoknad(sykepengesoknad.id)
+                SoknadStatus.NY -> soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
+                SoknadStatus.FREMTIDIG -> soknadDb.insertOrUpdate(sykepengesoknad.toSoknadDbModel())
+                SoknadStatus.SENDT -> handleSendt(sykepengesoknad)
+                SoknadStatus.KORRIGERT -> handleSendt(sykepengesoknad)
+                SoknadStatus.AVBRUTT -> soknadDb.deleteSoknad(sykepengesoknad.id)
+                SoknadStatus.SLETTET -> soknadDb.deleteSoknad(sykepengesoknad.id)
+                SoknadStatus.UTGAATT -> soknadDb.deleteSoknad(sykepengesoknad.id)
             }
         }
         SOKNAD_TOPIC_COUNTER.inc()
@@ -58,11 +59,11 @@ class SoknadService(
         }
     }
 
-    private fun hasArbeidsgiver(sykepengesoknad: SykepengesoknadDTO): Boolean {
+    private fun hasArbeidsgiver(sykepengesoknad: Soknad): Boolean {
         return sykepengesoknad.arbeidsgiver?.orgnummer != null
     }
 
-    private fun shouldHandleSoknad(sykepengesoknad: SykepengesoknadDTO) =
+    private fun shouldHandleSoknad(sykepengesoknad: Soknad) =
         hasArbeidsgiver(sykepengesoknad) &&
             sykepengesoknad.tom?.isAfter(LocalDate.now().minusMonths(4)) == true
 }

@@ -4,6 +4,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.objectMapper
+import no.nav.syfo.soknad.model.Soknad
 import org.postgresql.util.PGobject
 
 data class SoknadDbModel(
@@ -11,14 +12,14 @@ data class SoknadDbModel(
     val sykmeldingId: String?,
     val pasientFnr: String,
     val orgnummer: String,
-    val soknad: SykepengesoknadDTO,
+    val soknad: Soknad,
     val sendtDato: LocalDate?,
     val lest: Boolean,
     val timestamp: OffsetDateTime,
     val tom: LocalDate,
 )
 
-fun SykepengesoknadDTO.toPGObject() =
+fun Soknad.toPGObject() =
     PGobject().also {
         it.type = "json"
         it.value = objectMapper.writeValueAsString(this)
