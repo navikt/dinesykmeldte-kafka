@@ -218,6 +218,7 @@ class TestDb private constructor() {
                 lest = getBoolean("lest"),
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
                 tom = getObject("tom", LocalDate::class.java),
+                sykepengesoknad = getString("sykepengesoknad")?.let { objectMapper.readValue(it) },
             )
 
         fun getHendelse(id: String): HendelseDbModel? {

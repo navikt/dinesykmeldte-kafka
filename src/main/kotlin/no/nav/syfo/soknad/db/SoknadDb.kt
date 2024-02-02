@@ -20,12 +20,14 @@ class SoknadDb(private val database: DatabaseInterface) {
                         pasient_fnr, 
                         orgnummer, 
                         soknad,
+                        sykepengesoknad,
                         sendt_dato, 
                         lest, 
                         timestamp, 
                         tom) 
-                    values (?, ?, ?, ?, ?, ?, ?, ?, ?) on CONFLICT(soknad_id) do update 
+                    values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on CONFLICT(soknad_id) do update 
                         set soknad = excluded.soknad,
+                        sykepengesoknad = excluded.sykepengesoknad,
                         sykmelding_id = excluded.sykmelding_id,
                         pasient_fnr = excluded.pasient_fnr,
                         orgnummer = excluded.orgnummer,
@@ -42,13 +44,14 @@ class SoknadDb(private val database: DatabaseInterface) {
                     preparedStatement.setString(3, fnr)
                     preparedStatement.setString(4, soknadDbModel.orgnummer)
                     preparedStatement.setObject(5, soknadDbModel.soknad.toPGObject())
-                    preparedStatement.setObject(6, soknadDbModel.sendtDato)
-                    preparedStatement.setBoolean(7, soknadDbModel.lest)
+                    preparedStatement.setObject(6, soknadDbModel.sykepengesoknad?.toPGObject())
+                    preparedStatement.setObject(7, soknadDbModel.sendtDato)
+                    preparedStatement.setBoolean(8, soknadDbModel.lest)
                     preparedStatement.setTimestamp(
-                        8,
+                        9,
                         Timestamp.from(soknadDbModel.timestamp.toInstant())
                     )
-                    preparedStatement.setObject(9, soknadDbModel.tom)
+                    preparedStatement.setObject(10, soknadDbModel.tom)
                     preparedStatement.executeUpdate()
                 }
             connection.updateSistOppdatertForSykmeldt(fnr)
