@@ -1,7 +1,4 @@
-package no.nav.syfo.soknad.kafka.model
-
-import no.nav.syfo.soknad.model.Svartype
-import no.nav.syfo.soknad.model.Visningskriterium
+package no.nav.syfo.soknad.model
 
 data class Sporsmal(
     val id: String,
@@ -9,7 +6,7 @@ data class Sporsmal(
     val min: String?,
     val max: String?,
     val kriterieForVisningAvUndersporsmal: Visningskriterium?,
-    val svarType: Svartype,
+    val svartype: Svartype,
     val sporsmalstekst: String?,
     val undertekst: String?,
     val svar: List<Svar>,

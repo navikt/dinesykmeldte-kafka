@@ -2,7 +2,6 @@ package no.nav.syfo.soknad.model
 
 import java.time.LocalDate
 import java.time.LocalDateTime
-import no.nav.syfo.soknad.kafka.model.Sporsmal
 
 data class Soknad(
     val id: String,
@@ -10,6 +9,8 @@ data class Soknad(
     val fnr: String,
     val orgnummer: String?,
     val sykmeldingId: String?,
+    val korrigerer: String?,
+    val korrigertAv: String?,
     val fom: LocalDate?,
     val tom: LocalDate?,
     val sendtNav: LocalDateTime?,

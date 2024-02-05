@@ -11,11 +11,11 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykmeldingstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
 import no.nav.syfo.soknad.db.SoknadDbModel
-import no.nav.syfo.soknad.kafka.model.Sporsmal
-import no.nav.syfo.soknad.kafka.model.Svar
 import no.nav.syfo.soknad.model.Soknad
 import no.nav.syfo.soknad.model.SoknadStatus
 import no.nav.syfo.soknad.model.Soknadsperiode
+import no.nav.syfo.soknad.model.Sporsmal
+import no.nav.syfo.soknad.model.Svar
 import no.nav.syfo.soknad.model.Svartype
 import no.nav.syfo.soknad.model.Sykmeldingstype
 import no.nav.syfo.soknad.model.Visningskriterium
@@ -27,6 +27,8 @@ fun SykepengesoknadDTO.toSoknad(): Soknad {
         orgnummer = arbeidsgiver?.orgnummer,
         status = getStatus(status),
         sykmeldingId = sykmeldingId,
+        korrigertAv = korrigertAv,
+        korrigerer = korrigerer,
         sendtArbeidsgiver = sendtArbeidsgiver,
         fom = fom,
         tom = tom,
@@ -72,7 +74,7 @@ private fun SporsmalDTO.toSporsmal(): Sporsmal {
         sporsmalstekst = sporsmalstekst,
         undertekst = undertekst,
         kriterieForVisningAvUndersporsmal = kriterieForVisningAvUndersporsmal.toVisningskriterium(),
-        svarType = svartype.toSvarType(),
+        svartype = svartype.toSvarType(),
         svar = svar.toSvarList(),
         undersporsmal = undersporsmal?.map { it.toSporsmal() } ?: emptyList(),
     )
