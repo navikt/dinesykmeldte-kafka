@@ -33,6 +33,7 @@ class SoknadDb(private val database: DatabaseInterface) {
                         orgnummer = excluded.orgnummer,
                         timestamp = excluded.timestamp,
                         sendt_dato = excluded.sendt_dato,
+                        lest = excluded.lest,
                         tom = excluded.tom
                     ;
             """,
