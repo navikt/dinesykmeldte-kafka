@@ -1,9 +1,14 @@
 package no.nav.syfo.soknad.db
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import java.sql.Connection
 import java.sql.Timestamp
 import java.time.LocalDate
+import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.database.DatabaseInterface
+import no.nav.syfo.database.toList
+import no.nav.syfo.objectMapper
+import no.nav.syfo.soknad.model.Soknad
 
 class SoknadDb(private val database: DatabaseInterface) {
 
@@ -103,5 +108,40 @@ class SoknadDb(private val database: DatabaseInterface) {
                     }
                 }
             }
+    }
+
+    fun getSoknader(): List<Pair<String, SykepengesoknadDTO>> {
+        return database.connection.use { connection ->
+            connection
+                .prepareStatement(
+                    """
+                select soknad_id, soknad from soknad where sykepengesoknad is null;
+            """
+                )
+                .use {
+                    it.executeQuery().toList {
+                        getString("soknad_id") to
+                            objectMapper.readValue<SykepengesoknadDTO>(getString("soknad"))
+                    }
+                }
+        }
+    }
+
+    fun insertSoknad(first: String, newSoknad: Soknad) {
+        return database.connection.use { connection ->
+            connection
+                .prepareStatement(
+                    """
+                update soknad 
+                set sykepengesoknad = ? where soknad_id = ?;
+            """
+                )
+                .use {
+                    it.setObject(1, newSoknad.toPGObject())
+                    it.setString(2, first)
+                    it.executeUpdate()
+                }
+            connection.commit()
+        }
     }
 }
