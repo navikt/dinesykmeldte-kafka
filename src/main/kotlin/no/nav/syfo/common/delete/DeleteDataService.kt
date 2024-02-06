@@ -2,6 +2,7 @@ package no.nav.syfo.common.delete
 
 import java.time.LocalDate
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +33,7 @@ class DeleteDataService(
     fun start() {
         GlobalScope.launch(Dispatchers.Unbounded) {
             while (applicationState.ready) {
+                delay(5.minutes)
                 if (leaderElection.isLeader()) {
                     try {
                         val result = database.deleteOldData(getDateForDeletion())
