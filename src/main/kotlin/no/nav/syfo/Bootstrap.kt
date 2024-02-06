@@ -35,7 +35,6 @@ import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.soknad.SoknadService
-import no.nav.syfo.soknad.UpdateSoknadService
 import no.nav.syfo.soknad.db.SoknadDb
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.SykmeldingService
@@ -166,7 +165,6 @@ fun main() {
             DeleteDataDb(database),
             leaderElection,
             applicationState,
-            UpdateSoknadService(soknadDb = SoknadDb(database))
         )
         .start()
     ApplicationServer(applicationEngine, applicationState).start()

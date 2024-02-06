@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.leaderelection.LeaderElection
 import no.nav.syfo.application.metrics.SLETTET_COUNTER
-import no.nav.syfo.soknad.UpdateSoknadService
 import no.nav.syfo.util.Unbounded
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -21,12 +20,11 @@ class DeleteDataService(
     private val database: DeleteDataDb,
     private val leaderElection: LeaderElection,
     private val applicationState: ApplicationState,
-    private val updateSoknadService: UpdateSoknadService,
 ) {
 
     companion object {
         val log: Logger = LoggerFactory.getLogger(DeleteDataService::class.java)
-        private const val DELAY_HOURS = 24
+        private const val DELAY_HOURS = 12
         private const val MONTHS_FOR_SYKMELDING = 4L
     }
 
@@ -35,11 +33,9 @@ class DeleteDataService(
     fun start() {
         GlobalScope.launch(Dispatchers.Unbounded) {
             while (applicationState.ready) {
-                delay(3.minutes)
-
+                delay(5.minutes)
                 if (leaderElection.isLeader()) {
                     try {
-                        updateSoknadService.updateSoknader()
                         val result = database.deleteOldData(getDateForDeletion())
                         log.info(
                             "Deleted ${result.deletedSykmelding} sykmeldinger, ${result.deletedSykmeldt} sykmeldte, ${result.deletedSoknader} soknader and ${result.deletedHendelser} hendelser"
