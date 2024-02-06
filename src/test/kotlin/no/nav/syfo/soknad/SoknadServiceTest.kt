@@ -8,11 +8,11 @@ import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
-import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDb
+import no.nav.syfo.soknad.kafka.model.FlexSoknad
+import no.nav.syfo.soknad.kafka.model.FlexSoknadStatus
+import no.nav.syfo.soknad.kafka.model.FlexSporsmal
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.db.SykmeldtDbModel
 import no.nav.syfo.util.TestDb
@@ -45,9 +45,9 @@ class SoknadServiceTest :
                     connection.commit()
                 }
                 val soknadId = UUID.randomUUID().toString()
-                val sykepengesoknadDTO: SykepengesoknadDTO =
+                val sykepengesoknadDTO: FlexSoknad =
                     objectMapper
-                        .readValue<SykepengesoknadDTO>(
+                        .readValue<FlexSoknad>(
                             getFileAsString("src/test/resources/soknad.json"),
                         )
                         .copy(
@@ -89,22 +89,22 @@ class SoknadServiceTest :
                 soknadFraDb?.lest shouldBeEqualTo false
                 soknadFraDb?.timestamp?.toLocalDate() shouldBeEqualTo LocalDate.now()
                 soknadFraDb?.tom shouldBeEqualTo LocalDate.now().minusWeeks(2)
-                val arbeidsgiverSoknadFraDb = soknadFraDb!!.soknad
-                val sporsmalArbeidsgivervisning: List<SporsmalDTO> =
+                val arbeidsgiverSoknadFraDb = soknadFraDb!!.sykepengesoknad
+                val sporsmalArbeidsgivervisning: List<FlexSporsmal> =
                     objectMapper.readValue(
                         getFileAsString(
                             "src/test/resources/soknadSporsmalArbeidsgivervisning.json"
                         ),
                     )
-                arbeidsgiverSoknadFraDb.andreInntektskilder shouldBeEqualTo null
-                arbeidsgiverSoknadFraDb.sporsmal shouldBeEqualTo sporsmalArbeidsgivervisning
+                arbeidsgiverSoknadFraDb.sporsmal shouldBeEqualTo
+                    sporsmalArbeidsgivervisning.map { it.toSporsmal() }
                 TestDb.getSykmeldt("123456789")?.sistOppdatert shouldBeEqualTo LocalDate.now()
             }
             test("Ignorerer søknad med tom tidligere enn 4 mnd siden") {
                 val soknadId = UUID.randomUUID().toString()
-                val sykepengesoknadDTO: SykepengesoknadDTO =
+                val sykepengesoknadDTO: FlexSoknad =
                     objectMapper
-                        .readValue<SykepengesoknadDTO>(
+                        .readValue<FlexSoknad>(
                             getFileAsString("src/test/resources/soknad.json"),
                         )
                         .copy(
@@ -120,9 +120,9 @@ class SoknadServiceTest :
             }
             test("Skal lagre soknad med ny og slette med når den bare er sendt til NAV") {
                 val soknadId = UUID.randomUUID().toString()
-                val sykepengesoknadDTO: SykepengesoknadDTO =
+                val sykepengesoknadDTO: FlexSoknad =
                     objectMapper
-                        .readValue<SykepengesoknadDTO>(
+                        .readValue<FlexSoknad>(
                             getFileAsString("src/test/resources/soknad.json"),
                         )
                         .copy(
@@ -130,21 +130,21 @@ class SoknadServiceTest :
                             fom = LocalDate.now().minusMonths(1),
                             tom = LocalDate.now().minusWeeks(2),
                             sendtArbeidsgiver = null,
-                            status = SoknadsstatusDTO.NY,
+                            status = FlexSoknadStatus.NY,
                         )
                 soknadService.handleSykepengesoknad(sykepengesoknadDTO)
                 TestDb.getSoknad(soknadId) shouldNotBeEqualTo null
                 soknadService.handleSykepengesoknad(
-                    sykepengesoknadDTO.copy(status = SoknadsstatusDTO.SENDT)
+                    sykepengesoknadDTO.copy(status = FlexSoknadStatus.SENDT)
                 )
                 TestDb.getSoknad(soknadId) shouldBeEqualTo null
             }
 
             test("Ignorerer søknad som ikke er sendt til arbeidsgiver") {
                 val soknadId = UUID.randomUUID().toString()
-                val sykepengesoknadDTO: SykepengesoknadDTO =
+                val sykepengesoknadDTO: FlexSoknad =
                     objectMapper
-                        .readValue<SykepengesoknadDTO>(
+                        .readValue<FlexSoknad>(
                             getFileAsString("src/test/resources/soknad.json"),
                         )
                         .copy(
@@ -160,9 +160,9 @@ class SoknadServiceTest :
             }
             test("Ignorerer ikke søknad som ikke har status sendt") {
                 val soknadId = UUID.randomUUID().toString()
-                val sykepengesoknadDTO: SykepengesoknadDTO =
+                val sykepengesoknadDTO: FlexSoknad =
                     objectMapper
-                        .readValue<SykepengesoknadDTO>(
+                        .readValue<FlexSoknad>(
                             getFileAsString("src/test/resources/soknad.json"),
                         )
                         .copy(
@@ -170,7 +170,7 @@ class SoknadServiceTest :
                             fom = LocalDate.now().minusMonths(1),
                             tom = LocalDate.now().minusWeeks(2),
                             sendtArbeidsgiver = LocalDateTime.now().minusWeeks(1),
-                            status = SoknadsstatusDTO.NY,
+                            status = FlexSoknadStatus.NY,
                         )
 
                 soknadService.handleSykepengesoknad(sykepengesoknadDTO)

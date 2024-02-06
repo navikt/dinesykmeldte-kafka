@@ -19,7 +19,6 @@ val flywayVersion = "10.6.0"
 val postgresVersion = "42.7.1"
 val testContainerVersion = "1.19.4"
 val kotlinVersion = "1.9.22"
-val sykepengesoknadKafkaVersion = "2024.01.11-14.12-7adc3f4a"
 val kotestVersion = "5.8.0"
 val googlePostgresVersion = "1.15.2"
 val googleOauthVersion = "1.35.0"
@@ -71,8 +70,6 @@ dependencies {
         }
     }
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
-    implementation("no.nav.helse.flex:sykepengesoknad-kafka:$sykepengesoknadKafkaVersion")
-
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 

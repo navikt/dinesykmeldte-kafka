@@ -2,15 +2,15 @@ package no.nav.syfo.soknad
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsperiodeDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SvarDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SvartypeDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SykmeldingstypeDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.VisningskriteriumDTO
 import no.nav.syfo.soknad.db.SoknadDbModel
+import no.nav.syfo.soknad.kafka.model.FlexSoknad
+import no.nav.syfo.soknad.kafka.model.FlexSoknadStatus
+import no.nav.syfo.soknad.kafka.model.FlexSoknadsperiode
+import no.nav.syfo.soknad.kafka.model.FlexSporsmal
+import no.nav.syfo.soknad.kafka.model.FlexSvar
+import no.nav.syfo.soknad.kafka.model.FlexSvartype
+import no.nav.syfo.soknad.kafka.model.FlexSykmeldingstype
+import no.nav.syfo.soknad.kafka.model.FlexVisningskriterium
 import no.nav.syfo.soknad.model.Soknad
 import no.nav.syfo.soknad.model.SoknadStatus
 import no.nav.syfo.soknad.model.Soknadsperiode
@@ -20,7 +20,7 @@ import no.nav.syfo.soknad.model.Svartype
 import no.nav.syfo.soknad.model.Sykmeldingstype
 import no.nav.syfo.soknad.model.Visningskriterium
 
-fun SykepengesoknadDTO.toSoknad(): Soknad {
+fun FlexSoknad.toSoknad(): Soknad {
     return Soknad(
         id = id,
         fnr = fnr,
@@ -33,12 +33,13 @@ fun SykepengesoknadDTO.toSoknad(): Soknad {
         fom = fom,
         tom = tom,
         sendtNav = sendtNav,
-        sporsmal = sporsmal?.map { it.toSporsmal() } ?: emptyList(),
+        sporsmal = sporsmal?.filter { it.erWhitelistetForArbeidsgiver() }?.map { it.toSporsmal() }
+                ?: emptyList(),
         soknadsperioder = soknadsperioder.toSoknadsperioder(),
     )
 }
 
-private fun List<SoknadsperiodeDTO>?.toSoknadsperioder(): List<Soknadsperiode> {
+private fun List<FlexSoknadsperiode>?.toSoknadsperioder(): List<Soknadsperiode> {
     if (this == null) {
         throw IllegalStateException("soknadsperioder is null")
     } else {
@@ -46,29 +47,29 @@ private fun List<SoknadsperiodeDTO>?.toSoknadsperioder(): List<Soknadsperiode> {
     }
 }
 
-private fun SoknadsperiodeDTO.toSoknadsperiode(): Soknadsperiode {
+private fun FlexSoknadsperiode.toSoknadsperiode(): Soknadsperiode {
     return Soknadsperiode(
-        fom = fom ?: throw IllegalStateException("soknadsperide.fom is null"),
-        tom = tom ?: throw IllegalStateException("soknadsperide.tom is null"),
+        fom = fom,
+        tom = tom,
         sykmeldingsgrad = sykmeldingsgrad,
         sykmeldingstype = sykmeldingstype(),
     )
 }
 
-private fun SoknadsperiodeDTO.sykmeldingstype() =
+private fun FlexSoknadsperiode.sykmeldingstype() =
     when (sykmeldingstype) {
-        SykmeldingstypeDTO.AKTIVITET_IKKE_MULIG -> Sykmeldingstype.AKTIVITET_IKKE_MULIG
-        SykmeldingstypeDTO.GRADERT -> Sykmeldingstype.GRADERT
-        SykmeldingstypeDTO.BEHANDLINGSDAGER -> Sykmeldingstype.BEHANDLINGSDAGER
-        SykmeldingstypeDTO.AVVENTENDE -> Sykmeldingstype.AVVENTENDE
-        SykmeldingstypeDTO.REISETILSKUDD -> Sykmeldingstype.REISETILSKUDD
+        FlexSykmeldingstype.AKTIVITET_IKKE_MULIG -> Sykmeldingstype.AKTIVITET_IKKE_MULIG
+        FlexSykmeldingstype.GRADERT -> Sykmeldingstype.GRADERT
+        FlexSykmeldingstype.BEHANDLINGSDAGER -> Sykmeldingstype.BEHANDLINGSDAGER
+        FlexSykmeldingstype.AVVENTENDE -> Sykmeldingstype.AVVENTENDE
+        FlexSykmeldingstype.REISETILSKUDD -> Sykmeldingstype.REISETILSKUDD
         null -> throw IllegalStateException("sykmeldingstype is null")
     }
 
-private fun SporsmalDTO.toSporsmal(): Sporsmal {
+fun FlexSporsmal.toSporsmal(): Sporsmal {
     return Sporsmal(
-        id = id ?: throw IllegalStateException("sporsmal.id is null"),
-        tag = tag ?: throw IllegalStateException("sporsmal.tag is null"),
+        id = id,
+        tag = tag,
         min = min,
         max = max,
         sporsmalstekst = sporsmalstekst,
@@ -80,7 +81,7 @@ private fun SporsmalDTO.toSporsmal(): Sporsmal {
     )
 }
 
-private fun List<SvarDTO>?.toSvarList(): List<Svar> {
+private fun List<FlexSvar>?.toSvarList(): List<Svar> {
     if (this == null) {
         throw IllegalStateException("Svar list is null")
     } else {
@@ -88,85 +89,74 @@ private fun List<SvarDTO>?.toSvarList(): List<Svar> {
     }
 }
 
-private fun SvarDTO.toSvar(): Svar {
+private fun FlexSvar.toSvar(): Svar {
     return Svar(verdi ?: throw IllegalStateException("svar.verdi is null"))
 }
 
-private fun SvartypeDTO?.toSvarType(): Svartype {
+private fun FlexSvartype?.toSvarType(): Svartype {
     return when (this) {
-        SvartypeDTO.JA_NEI -> Svartype.JA_NEI
-        SvartypeDTO.CHECKBOX -> Svartype.CHECKBOX
-        SvartypeDTO.CHECKBOX_GRUPPE -> Svartype.CHECKBOX_GRUPPE
-        SvartypeDTO.CHECKBOX_PANEL -> Svartype.CHECKBOX_PANEL
-        SvartypeDTO.DATO -> Svartype.DATO
-        SvartypeDTO.PERIODE -> Svartype.PERIODE
-        SvartypeDTO.PERIODER -> Svartype.PERIODER
-        SvartypeDTO.TIMER -> Svartype.TIMER
-        SvartypeDTO.FRITEKST -> Svartype.FRITEKST
-        SvartypeDTO.IKKE_RELEVANT -> Svartype.IKKE_RELEVANT
-        SvartypeDTO.GRUPPE_AV_UNDERSPORSMAL -> Svartype.GRUPPE_AV_UNDERSPORSMAL
-        SvartypeDTO.BEKREFTELSESPUNKTER -> Svartype.BEKREFTELSESPUNKTER
-        SvartypeDTO.PROSENT -> Svartype.PROSENT
-        SvartypeDTO.RADIO_GRUPPE -> Svartype.RADIO_GRUPPE
-        SvartypeDTO.RADIO_GRUPPE_TIMER_PROSENT -> Svartype.RADIO_GRUPPE_TIMER_PROSENT
-        SvartypeDTO.RADIO -> Svartype.RADIO
-        SvartypeDTO.TALL -> Svartype.TALL
-        SvartypeDTO.RADIO_GRUPPE_UKEKALENDER -> Svartype.RADIO_GRUPPE_UKEKALENDER
-        SvartypeDTO.LAND -> Svartype.LAND
-        SvartypeDTO.COMBOBOX_SINGLE -> Svartype.COMBOBOX_SINGLE
-        SvartypeDTO.COMBOBOX_MULTI -> Svartype.COMBOBOX_MULTI
-        SvartypeDTO.INFO_BEHANDLINGSDAGER -> Svartype.INFO_BEHANDLINGSDAGER
-        SvartypeDTO.KVITTERING -> Svartype.KVITTERING
-        SvartypeDTO.DATOER -> Svartype.DATOER
-        SvartypeDTO.BELOP -> Svartype.BELOP
-        SvartypeDTO.KILOMETER -> Svartype.KILOMETER
+        FlexSvartype.JA_NEI -> Svartype.JA_NEI
+        FlexSvartype.CHECKBOX -> Svartype.CHECKBOX
+        FlexSvartype.CHECKBOX_GRUPPE -> Svartype.CHECKBOX_GRUPPE
+        FlexSvartype.CHECKBOX_PANEL -> Svartype.CHECKBOX_PANEL
+        FlexSvartype.DATO -> Svartype.DATO
+        FlexSvartype.PERIODE -> Svartype.PERIODE
+        FlexSvartype.PERIODER -> Svartype.PERIODER
+        FlexSvartype.TIMER -> Svartype.TIMER
+        FlexSvartype.FRITEKST -> Svartype.FRITEKST
+        FlexSvartype.IKKE_RELEVANT -> Svartype.IKKE_RELEVANT
+        FlexSvartype.GRUPPE_AV_UNDERSPORSMAL -> Svartype.GRUPPE_AV_UNDERSPORSMAL
+        FlexSvartype.BEKREFTELSESPUNKTER -> Svartype.BEKREFTELSESPUNKTER
+        FlexSvartype.PROSENT -> Svartype.PROSENT
+        FlexSvartype.RADIO_GRUPPE -> Svartype.RADIO_GRUPPE
+        FlexSvartype.RADIO_GRUPPE_TIMER_PROSENT -> Svartype.RADIO_GRUPPE_TIMER_PROSENT
+        FlexSvartype.RADIO -> Svartype.RADIO
+        FlexSvartype.TALL -> Svartype.TALL
+        FlexSvartype.RADIO_GRUPPE_UKEKALENDER -> Svartype.RADIO_GRUPPE_UKEKALENDER
+        FlexSvartype.LAND -> Svartype.LAND
+        FlexSvartype.COMBOBOX_SINGLE -> Svartype.COMBOBOX_SINGLE
+        FlexSvartype.COMBOBOX_MULTI -> Svartype.COMBOBOX_MULTI
+        FlexSvartype.INFO_BEHANDLINGSDAGER -> Svartype.INFO_BEHANDLINGSDAGER
+        FlexSvartype.KVITTERING -> Svartype.KVITTERING
+        FlexSvartype.DATOER -> Svartype.DATOER
+        FlexSvartype.BELOP -> Svartype.BELOP
+        FlexSvartype.KILOMETER -> Svartype.KILOMETER
         null -> throw IllegalStateException("Svartype is null")
     }
 }
 
-private fun VisningskriteriumDTO?.toVisningskriterium(): Visningskriterium? {
+private fun FlexVisningskriterium?.toVisningskriterium(): Visningskriterium? {
     return when (this) {
-        VisningskriteriumDTO.NEI -> Visningskriterium.NEI
-        VisningskriteriumDTO.JA -> Visningskriterium.JA
-        VisningskriteriumDTO.CHECKED -> Visningskriterium.CHECKED
+        FlexVisningskriterium.NEI -> Visningskriterium.NEI
+        FlexVisningskriterium.JA -> Visningskriterium.JA
+        FlexVisningskriterium.CHECKED -> Visningskriterium.CHECKED
         null -> null
     }
 }
 
-fun getStatus(status: SoknadsstatusDTO): SoknadStatus {
+fun getStatus(status: FlexSoknadStatus): SoknadStatus {
     return when (status) {
-        SoknadsstatusDTO.NY -> SoknadStatus.NY
-        SoknadsstatusDTO.SENDT -> SoknadStatus.SENDT
-        SoknadsstatusDTO.FREMTIDIG -> SoknadStatus.FREMTIDIG
-        SoknadsstatusDTO.KORRIGERT -> SoknadStatus.KORRIGERT
-        SoknadsstatusDTO.AVBRUTT -> SoknadStatus.AVBRUTT
-        SoknadsstatusDTO.SLETTET -> SoknadStatus.SLETTET
-        SoknadsstatusDTO.UTGAATT -> SoknadStatus.UTGAATT
+        FlexSoknadStatus.NY -> SoknadStatus.NY
+        FlexSoknadStatus.SENDT -> SoknadStatus.SENDT
+        FlexSoknadStatus.FREMTIDIG -> SoknadStatus.FREMTIDIG
+        FlexSoknadStatus.KORRIGERT -> SoknadStatus.KORRIGERT
+        FlexSoknadStatus.AVBRUTT -> SoknadStatus.AVBRUTT
+        FlexSoknadStatus.SLETTET -> SoknadStatus.SLETTET
+        FlexSoknadStatus.UTGAATT -> SoknadStatus.UTGAATT
     }
 }
 
-fun SykepengesoknadDTO.toSoknadDbModel(): SoknadDbModel {
-    val soknad = tilArbeidsgiverSoknad()
+fun FlexSoknad.toSoknadDbModel(): SoknadDbModel {
     return SoknadDbModel(
         soknadId = id,
         sykmeldingId = sykmeldingId,
         pasientFnr = fnr,
         orgnummer = arbeidsgiver?.orgnummer
                 ?: throw IllegalStateException("Har mottatt sendt søknad uten orgnummer: $id"),
-        soknad = soknad,
         sendtDato = sendtArbeidsgiver?.toLocalDate(),
         lest = false,
         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
         tom = tom!!,
-        sykepengesoknad = soknad.toSoknad(),
+        sykepengesoknad = toSoknad(),
     )
-}
-
-fun SykepengesoknadDTO.tilArbeidsgiverSoknad(): SykepengesoknadDTO {
-    return whitelistetForArbeidsgiver()
-        .copy(
-            andreInntektskilder = null,
-            yrkesskade = null,
-            arbeidUtenforNorge = null,
-        )
 }

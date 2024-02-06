@@ -1,14 +1,9 @@
 package no.nav.syfo.soknad.db
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import java.sql.Connection
 import java.sql.Timestamp
 import java.time.LocalDate
-import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.database.DatabaseInterface
-import no.nav.syfo.database.toList
-import no.nav.syfo.objectMapper
-import no.nav.syfo.soknad.model.Soknad
 
 class SoknadDb(private val database: DatabaseInterface) {
 
@@ -24,15 +19,13 @@ class SoknadDb(private val database: DatabaseInterface) {
                         sykmelding_id, 
                         pasient_fnr, 
                         orgnummer, 
-                        soknad,
                         sykepengesoknad,
                         sendt_dato, 
                         lest, 
                         timestamp, 
                         tom) 
-                    values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) on CONFLICT(soknad_id) do update 
-                        set soknad = excluded.soknad,
-                        sykepengesoknad = excluded.sykepengesoknad,
+                    values (?, ?, ?, ?, ?, ?, ?, ?, ?) on CONFLICT(soknad_id) do update 
+                        set sykepengesoknad = excluded.sykepengesoknad,
                         sykmelding_id = excluded.sykmelding_id,
                         pasient_fnr = excluded.pasient_fnr,
                         orgnummer = excluded.orgnummer,
@@ -48,15 +41,14 @@ class SoknadDb(private val database: DatabaseInterface) {
                     preparedStatement.setString(2, soknadDbModel.sykmeldingId)
                     preparedStatement.setString(3, fnr)
                     preparedStatement.setString(4, soknadDbModel.orgnummer)
-                    preparedStatement.setObject(5, soknadDbModel.soknad.toPGObject())
-                    preparedStatement.setObject(6, soknadDbModel.sykepengesoknad?.toPGObject())
-                    preparedStatement.setObject(7, soknadDbModel.sendtDato)
-                    preparedStatement.setBoolean(8, soknadDbModel.lest)
+                    preparedStatement.setObject(5, soknadDbModel.sykepengesoknad.toPGObject())
+                    preparedStatement.setObject(6, soknadDbModel.sendtDato)
+                    preparedStatement.setBoolean(7, soknadDbModel.lest)
                     preparedStatement.setTimestamp(
-                        9,
+                        8,
                         Timestamp.from(soknadDbModel.timestamp.toInstant())
                     )
-                    preparedStatement.setObject(10, soknadDbModel.tom)
+                    preparedStatement.setObject(9, soknadDbModel.tom)
                     preparedStatement.executeUpdate()
                 }
             connection.updateSistOppdatertForSykmeldt(fnr)
@@ -108,40 +100,5 @@ class SoknadDb(private val database: DatabaseInterface) {
                     }
                 }
             }
-    }
-
-    fun getSoknader(): List<Pair<String, SykepengesoknadDTO>> {
-        return database.connection.use { connection ->
-            connection
-                .prepareStatement(
-                    """
-                select soknad_id, soknad from soknad where sykepengesoknad is null;
-            """
-                )
-                .use {
-                    it.executeQuery().toList {
-                        getString("soknad_id") to
-                            objectMapper.readValue<SykepengesoknadDTO>(getString("soknad"))
-                    }
-                }
-        }
-    }
-
-    fun insertSoknad(first: String, newSoknad: Soknad) {
-        return database.connection.use { connection ->
-            connection
-                .prepareStatement(
-                    """
-                update soknad 
-                set sykepengesoknad = ? where soknad_id = ?;
-            """
-                )
-                .use {
-                    it.setObject(1, newSoknad.toPGObject())
-                    it.setString(2, first)
-                    it.executeUpdate()
-                }
-            connection.commit()
-        }
     }
 }

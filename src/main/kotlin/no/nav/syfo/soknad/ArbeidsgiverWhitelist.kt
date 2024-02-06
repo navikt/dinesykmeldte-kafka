@@ -1,7 +1,6 @@
 package no.nav.syfo.soknad
 
-import no.nav.helse.flex.sykepengesoknad.kafka.SporsmalDTO
-import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
+import no.nav.syfo.soknad.kafka.model.FlexSporsmal
 
 private val whitelistetHovedsporsmal =
     listOf(
@@ -38,10 +37,6 @@ private fun String.fjernTagIndex(): String {
     return regex.replace(this, "")
 }
 
-fun SporsmalDTO.erWhitelistetForArbeidsgiver(): Boolean {
-    val tag = this.tag ?: return false
+fun FlexSporsmal.erWhitelistetForArbeidsgiver(): Boolean {
     return tag.fjernTagIndex() in whitelistetHovedsporsmal
 }
-
-fun SykepengesoknadDTO.whitelistetForArbeidsgiver(): SykepengesoknadDTO =
-    this.copy(sporsmal = this.sporsmal?.filter { it.erWhitelistetForArbeidsgiver() })

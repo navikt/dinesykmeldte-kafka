@@ -11,7 +11,6 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
-import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.getFileAsString
 import no.nav.syfo.model.sykmelding.arbeidsgiver.AktivitetIkkeMuligAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
@@ -24,6 +23,7 @@ import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.soknad.db.SoknadDbModel
+import no.nav.syfo.soknad.kafka.model.FlexSoknad
 import no.nav.syfo.soknad.toSoknadDbModel
 import no.nav.syfo.syketilfelle.client.SyfoSyketilfelleClient
 import no.nav.syfo.sykmelding.db.SykmeldingDb
@@ -434,7 +434,7 @@ fun createSykepengesoknadDto(
     fnr: String = "12345678910",
 ) =
     objectMapper
-        .readValue<SykepengesoknadDTO>(
+        .readValue<FlexSoknad>(
             getFileAsString("src/test/resources/soknad.json"),
         )
         .copy(

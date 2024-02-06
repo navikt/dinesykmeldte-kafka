@@ -8,7 +8,6 @@ import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.ZoneOffset
-import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.database.toList
 import no.nav.syfo.hendelser.db.HendelseDbModel
@@ -212,13 +211,11 @@ class TestDb private constructor() {
                 sykmeldingId = getString("sykmelding_id"),
                 pasientFnr = getString("pasient_fnr"),
                 orgnummer = getString("orgnummer"),
-                soknad =
-                    objectMapper.readValue(getString("soknad"), SykepengesoknadDTO::class.java),
                 sendtDato = getObject("sendt_dato", LocalDate::class.java),
                 lest = getBoolean("lest"),
                 timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
                 tom = getObject("tom", LocalDate::class.java),
-                sykepengesoknad = getString("sykepengesoknad")?.let { objectMapper.readValue(it) },
+                sykepengesoknad = getString("sykepengesoknad").let { objectMapper.readValue(it) },
             )
 
         fun getHendelse(id: String): HendelseDbModel? {
@@ -263,13 +260,13 @@ fun DatabaseInterface.insertOrUpdate(soknadDbModel: SoknadDbModel) {
                         sykmelding_id, 
                         pasient_fnr, 
                         orgnummer, 
-                        soknad,
+                        sykepengesoknad,
                         sendt_dato, 
                         lest, 
                         timestamp, 
                         tom) 
                     values (?, ?, ?, ?, ?, ?, ?, ?, ?) on CONFLICT(soknad_id) do update 
-                        set soknad = excluded.soknad,
+                        set sykepengesoknad = excluded.sykepengesoknad,
                         sykmelding_id = excluded.sykmelding_id,
                         pasient_fnr = excluded.pasient_fnr,
                         orgnummer = excluded.orgnummer,
@@ -285,7 +282,7 @@ fun DatabaseInterface.insertOrUpdate(soknadDbModel: SoknadDbModel) {
                 preparedStatement.setString(2, soknadDbModel.sykmeldingId)
                 preparedStatement.setString(3, soknadDbModel.pasientFnr)
                 preparedStatement.setString(4, soknadDbModel.orgnummer)
-                preparedStatement.setObject(5, soknadDbModel.soknad.toPGObject())
+                preparedStatement.setObject(5, soknadDbModel.sykepengesoknad.toPGObject())
                 preparedStatement.setObject(6, soknadDbModel.sendtDato)
                 preparedStatement.setBoolean(7, soknadDbModel.lest)
                 preparedStatement.setTimestamp(
