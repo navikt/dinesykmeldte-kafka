@@ -8,7 +8,7 @@ data class FlexSoknad(
     val fnr: String,
     val arbeidsgiver: FlexArbeidsgiver?,
     val status: FlexSoknadStatus,
-    val sykmeldingId: String,
+    val sykmeldingId: String?,
     val korrigerer: String?,
     val korrigertAv: String?,
     val fom: LocalDate?,
