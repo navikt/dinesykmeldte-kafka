@@ -93,7 +93,7 @@ fun main() {
             retryIf(maxRetries) { request, response ->
                 if (response.status.value.let { it in 500..599 }) {
                     log.warn(
-                        "Retrying for statuscode ${response.status.value}, for url ${request.url}"
+                        "Retrying for statuscode ${response.status.value}, for url ${request.url}",
                     )
                     true
                 } else {
@@ -109,11 +109,6 @@ fun main() {
         PdlClient(
             httpClient,
             env.pdlGraphqlPath,
-            PdlClient::class
-                .java
-                .getResource("/graphql/getPerson.graphql")!!
-                .readText()
-                .replace(Regex("[\n\t]"), ""),
         )
     val pdlPersonService = PdlPersonService(pdlClient, accessTokenClient, env.pdlScope)
 
@@ -144,7 +139,7 @@ fun main() {
             SykmeldingDb(database),
             pdlPersonService,
             syfoSyketilfelleClient,
-            env.cluster
+            env.cluster,
         )
     val soknadService = SoknadService(SoknadDb(database), env.cluster)
     val hendelserService = HendelserService(HendelserDb(database))
