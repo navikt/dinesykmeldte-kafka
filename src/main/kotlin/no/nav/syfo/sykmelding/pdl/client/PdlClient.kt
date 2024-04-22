@@ -9,23 +9,46 @@ import io.ktor.http.HttpHeaders
 import no.nav.syfo.sykmelding.pdl.client.model.GetPersonRequest
 import no.nav.syfo.sykmelding.pdl.client.model.GetPersonResponse
 import no.nav.syfo.sykmelding.pdl.client.model.GetPersonVariables
+import org.intellij.lang.annotations.Language
+
+@Language("GraphQL")
+private val getPersonQuery =
+    """
+    query(${'$'}ident: ID!){
+      person: hentPerson(ident: ${'$'}ident) {
+      	navn(historikk: false) {
+      	  fornavn
+      	  mellomnavn
+      	  etternavn
+        }
+      }
+      identer: hentIdenter(ident: ${'$'}ident, historikk: false) {
+          identer {
+            ident,
+            gruppe
+          }
+        }
+    }
+"""
+        .trimIndent()
 
 class PdlClient(
     private val httpClient: HttpClient,
     private val basePath: String,
-    private val graphQlQuery: String,
 ) {
-    private val temaHeader = "TEMA"
-    private val tema = "SYM"
-
     suspend fun getPerson(fnr: String, token: String): GetPersonResponse {
         val getPersonRequest =
-            GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(ident = fnr))
+            GetPersonRequest(
+                query = getPersonQuery,
+                variables = GetPersonVariables(ident = fnr),
+            )
+
         return httpClient
             .post(basePath) {
                 setBody(getPersonRequest)
                 header(HttpHeaders.Authorization, "Bearer $token")
-                header(temaHeader, tema)
+                header("TEMA", "SYM")
+                header("Behandlingsnummer", "B229")
                 header(HttpHeaders.ContentType, "application/json")
             }
             .body()

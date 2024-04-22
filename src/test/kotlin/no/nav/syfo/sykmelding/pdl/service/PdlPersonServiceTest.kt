@@ -23,11 +23,7 @@ class PdlPersonServiceTest :
         val accessTokenClient = mockk<AccessTokenClient>()
         val httpClient = HttpClientTest()
 
-        val graphQlQuery =
-            File("src/main/resources/graphql/getPerson.graphql")
-                .readText()
-                .replace(Regex("[\n\t]"), "")
-        val pdlClient = PdlClient(httpClient.httpClient, "graphqlend", graphQlQuery)
+        val pdlClient = PdlClient(httpClient.httpClient, "graphqlend")
         val pdlPersonService = PdlPersonService(pdlClient, accessTokenClient, "scope")
 
         beforeEach { coEvery { accessTokenClient.getAccessToken(any()) } returns "token" }
