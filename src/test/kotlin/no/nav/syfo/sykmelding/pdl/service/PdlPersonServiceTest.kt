@@ -3,7 +3,6 @@ package no.nav.syfo.sykmelding.pdl.service
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.coEvery
 import io.mockk.mockk
-import java.io.File
 import java.util.UUID
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.delay
