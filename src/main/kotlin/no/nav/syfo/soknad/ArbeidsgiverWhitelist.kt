@@ -9,7 +9,7 @@ private val whitelistetHovedsporsmal =
         "TILBAKE_I_ARBEID",
         "FERIE_V2",
         "PERMISJON_V2",
-        "UTLAND_V2",
+        "OPPHOLD_UTENFOR_EOS",
         "JOBBET_DU_100_PROSENT",
         "JOBBET_DU_GRADERT",
         "ARBEID_UNDERVEIS_100_PROSENT",
@@ -30,6 +30,7 @@ private val whitelistetHovedsporsmal =
         "PERMITTERT_PERIODE",
         "FRAVAR_FOR_SYKMELDINGEN",
         "UTLAND",
+        "UTLAND_V2",
     )
 
 private fun String.fjernTagIndex(): String {
