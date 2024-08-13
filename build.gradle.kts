@@ -11,7 +11,6 @@ val logbackVersion = "1.5.6"
 val ktorVersion = "2.3.12"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "2.0.8"
 val mockkVersion = "1.13.11"
 val nimbusdsVersion = "9.40"
 val hikariVersion = "5.1.0"
@@ -24,6 +23,7 @@ val googlePostgresVersion = "1.19.0"
 val googleOauthVersion = "1.36.0"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.5"
+val kafkaVersion = "3.8.0"
 
 tasks.withType<Jar> {
     manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
@@ -33,7 +33,6 @@ plugins {
     id("com.diffplug.spotless") version "6.25.0"
     kotlin("jvm") version "2.0.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.cyclonedx.bom") version "1.8.2"
 }
 
 
@@ -63,13 +62,6 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
-    implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-    constraints {
-        implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion") {
-            because("override transient from org.apache.kafka:kafka_2.12")
-        }
-    }
-    implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
@@ -83,6 +75,9 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.google.cloud.sql:postgres-socket-factory:$googlePostgresVersion")
     implementation("com.google.oauth-client:google-oauth-client:$googleOauthVersion")
+    implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
+
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
