@@ -107,6 +107,7 @@ private fun FlexSvartype?.toSvarType(): Svartype {
         FlexSvartype.IKKE_RELEVANT -> Svartype.IKKE_RELEVANT
         FlexSvartype.GRUPPE_AV_UNDERSPORSMAL -> Svartype.GRUPPE_AV_UNDERSPORSMAL
         FlexSvartype.BEKREFTELSESPUNKTER -> Svartype.BEKREFTELSESPUNKTER
+        FlexSvartype.OPPSUMMERING -> Svartype.OPPSUMMERING
         FlexSvartype.PROSENT -> Svartype.PROSENT
         FlexSvartype.RADIO_GRUPPE -> Svartype.RADIO_GRUPPE
         FlexSvartype.RADIO_GRUPPE_TIMER_PROSENT -> Svartype.RADIO_GRUPPE_TIMER_PROSENT
