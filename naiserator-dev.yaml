@@ -47,7 +47,6 @@ spec:
     requests:
       cpu: 100m
       memory: 768Mi
-  vault:
     enabled: false
   leaderElection: true
   envFrom:
