@@ -47,7 +47,6 @@ spec:
     requests:
       cpu: 100m
       memory: 768Mi
-    enabled: false
   leaderElection: true
   envFrom:
     - secret: google-sql-dinesykmeldte-backend-dinesykmeldte-backend-2b15651f
