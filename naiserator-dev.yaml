@@ -42,11 +42,10 @@ spec:
         - id: elastic
   resources:
     limits:
-      cpu: 500m
       memory: 1Gi
     requests:
-      cpu: 100m
-      memory: 768Mi
+      cpu: 30m
+      memory: 256Mi
   leaderElection: true
   envFrom:
     - secret: google-sql-dinesykmeldte-backend-dinesykmeldte-backend-2b15651f
