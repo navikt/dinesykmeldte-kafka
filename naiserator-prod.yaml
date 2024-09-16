@@ -45,7 +45,7 @@ spec:
       memory: 1Gi
     requests:
       cpu: 50m
-      memory: 400Mi
+      memory: 600Mi
   leaderElection: true
   envFrom:
     - secret: google-sql-dinesykmeldte-backend-dinesykmeldte-backend-2b15651f
