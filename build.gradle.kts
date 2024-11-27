@@ -55,8 +55,6 @@ dependencies {
             because("Due to vulnerabilities in io.ktor:ktor-server-netty")
         }
     }
-    implementation("io.ktor:ktor-server-auth:$ktorVersion")
-    implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-server-cors:$ktorVersion")
     implementation("io.ktor:ktor-server-call-id:$ktorVersion")
