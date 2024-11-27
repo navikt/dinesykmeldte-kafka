@@ -4,11 +4,10 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransf
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.7.3"
 val jacksonVersion = "2.17.2"
 val kluentVersion = "1.73"
 val logbackVersion = "1.5.6"
-val ktorVersion = "2.3.12"
+val ktorVersion = "3.0.1"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
 val mockkVersion = "1.13.12"
@@ -22,13 +21,12 @@ val kotestVersion = "5.9.1"
 val googlePostgresVersion = "1.19.1"
 val googleOauthVersion = "1.36.0"
 val ktfmtVersion = "0.44"
-val snappyJavaVersion = "1.1.10.5"
 val kafkaVersion = "3.8.0"
+
+//Due to vulnerabilities
+val nettycommonVersion = "4.1.115.Final"
 val commonsCompressVersion = "1.27.0"
 
-tasks.withType<Jar> {
-    manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
-}
 
 plugins {
     id("com.diffplug.spotless") version "6.25.0"
@@ -52,6 +50,11 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    constraints {
+        implementation("io.netty:netty-common:$nettycommonVersion") {
+            because("Due to vulnerabilities in io.ktor:ktor-server-netty")
+        }
+    }
     implementation("io.ktor:ktor-server-auth:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")

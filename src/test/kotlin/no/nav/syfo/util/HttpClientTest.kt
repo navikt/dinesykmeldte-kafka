@@ -16,18 +16,16 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
+import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
-import io.ktor.util.pipeline.PipelineContext
 import java.net.ServerSocket
 import no.nav.syfo.common.exception.ServiceUnavailableException
 import no.nav.syfo.log
@@ -59,7 +57,7 @@ class HttpClientTest {
             }
             .start(false)
 
-    private suspend fun PipelineContext<Unit, ApplicationCall>.response() {
+    private suspend fun RoutingContext.response() {
         when (val response = responseFunction.invoke()) {
             null -> call.respond(HttpStatusCode.OK)
             else -> {
