@@ -4,24 +4,24 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransf
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val jacksonVersion = "2.17.2"
+val jacksonVersion = "2.18.2"
 val kluentVersion = "1.73"
-val logbackVersion = "1.5.6"
+val logbackVersion = "1.5.12"
 val ktorVersion = "3.0.1"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
-val mockkVersion = "1.13.12"
-val nimbusdsVersion = "9.40"
-val hikariVersion = "5.1.0"
-val flywayVersion = "10.17.1"
+val mockkVersion = "1.13.13"
+val nimbusdsVersion = "9.47"
+val hikariVersion = "6.2.1"
+val flywayVersion = "11.0.0"
 val postgresVersion = "42.7.3"
-val testContainerVersion = "1.20.1"
-val kotlinVersion = "2.0.10"
+val testContainerVersion = "1.20.4"
+val kotlinVersion = "2.1.0"
 val kotestVersion = "5.9.1"
-val googlePostgresVersion = "1.19.1"
+val googlePostgresVersion = "1.21.0"
 val googleOauthVersion = "1.36.0"
 val ktfmtVersion = "0.44"
-val kafkaVersion = "3.8.0"
+val kafkaVersion = "3.9.0"
 
 //Due to vulnerabilities
 val nettycommonVersion = "4.1.115.Final"
@@ -30,8 +30,8 @@ val commonsCompressVersion = "1.27.0"
 
 plugins {
     id("com.diffplug.spotless") version "6.25.0"
-    kotlin("jvm") version "2.0.10"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    kotlin("jvm") version "2.1.0"
+    id("com.gradleup.shadow") version "8.3.5"
 }
 
 
